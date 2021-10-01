@@ -18,6 +18,7 @@
 }
 .formWrapper .buttonPanel button {
   flex-grow: 1;
+  margin-right: 0;
 }
 
 .formWrapper button,
@@ -37,6 +38,7 @@
 .formWrapper button {
   color: rgb(112, 76, 182);
   padding: 0.3em 0.5em;
+  margin-right: 0.5em;
 }
 .formWrapper button,
 .formWrapper select {
@@ -69,17 +71,14 @@
   color: rgb(129, 133, 185);
 }
 
-.formWrapper label {
+.formWrapper .row {
   display: block;
   margin-bottom: 1em;
 }
-.formWrapper label > span {
+.formWrapper .row > span {
   font-size: 1.2em;
   font-weight: 300;
   cursor: pointer;
-}
-
-.formWrapper label > span {
   display: block;
   margin: 0 0.5em 0.5em 0;
 }

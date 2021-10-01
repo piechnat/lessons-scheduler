@@ -22,11 +22,16 @@ function SchedulerScreen() {
       />
       <div className={styles.buttonPanel}>
         <button>Szukaj</button>
-        <button disabled={studentId < 0}>Edytuj</button>
-        <button onClick={() => dispatch(removeStudent())} disabled={studentId < 0}>
+        <button
+          onClick={() => dispatch(changeScreen(Screen.STUDENT_EDIT))}
+          disabled={studentId < 0}
+        >
+          Edytuj
+        </button>
+        <button onClick={() => dispatch(removeStudent(studentId))} disabled={studentId < 0}>
           Usuń
         </button>
-        <button onClick={() => dispatch(changeScreen(Screen.STUDENT))}>Dodaj</button>
+        <button onClick={() => dispatch(changeScreen(Screen.STUDENT_ADD))}>Dodaj</button>
       </div>
     </div>
   );

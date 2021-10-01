@@ -25,7 +25,8 @@ function App() {
           switch (activeScreen) {
             case Screen.SCHEDULER:
               return <SchedulerScreen />;
-            case Screen.STUDENT:
+            case Screen.STUDENT_ADD:
+            case Screen.STUDENT_EDIT:
               return <StudentScreen />;
           }
         })()}

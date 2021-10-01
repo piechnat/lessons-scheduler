@@ -5,7 +5,8 @@ import mainScheduler from "../utils/mainScheduler";
 
 export enum Screen {
   SCHEDULER,
-  STUDENT,
+  STUDENT_ADD,
+  STUDENT_EDIT,
 }
 
 interface AppState {
@@ -30,22 +31,28 @@ const appSlice = createSlice({
     setStudentId: (state, { payload: newId }: PayloadAction<number>) => {
       state.studentId = newId;
     },
-    removeStudent: (state) => {
-      const removeIndex = state.students.findIndex((student) => student.id === state.studentId);
+    removeStudent: (state, { payload: studentId }: PayloadAction<number|undefined>) => {
+      studentId = studentId ?? state.studentId;
+      const removeIndex = state.students.findIndex((student) => student.id === studentId);
       if (removeIndex > -1) {
         state.students.splice(removeIndex, 1);
         state.studentId = -1;
       }
     },
     setStudent: (state, { payload: newStudent }: PayloadAction<StudentPlane>) => {
+      let success = false;
       if (!(newStudent.id > -1)) {
         state.studentId = newStudent.id =
           state.students.reduce<number>((maxId, student) => Math.max(maxId, student.id), -1) + 1;
         state.students.push(newStudent);
+        success = true;
       } else {
-        state.students.some((student, index) =>
+        success = state.students.some((student, index) =>
           student.id === newStudent.id ? (state.students[index] = newStudent) : false
         );
+      }
+      if (success) {
+        state.activeScreen = Screen.SCHEDULER;
       }
     },
   },

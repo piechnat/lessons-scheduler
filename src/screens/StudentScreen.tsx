@@ -24,7 +24,7 @@ function StudentScreen() {
   const [periodList, setPeriodList] = useState(student.periods);
   const [periodIndex, setPeriodIndex] = useState(-1);
 
-  function loadStudent(): StudentPlane {
+  function buildStudent(): StudentPlane {
     return new Student(
       student.id,
       studentName,
@@ -32,12 +32,20 @@ function StudentScreen() {
       periodList.map((period) => new Period(period.begin, period.length))
     ).toPlain();
   }
-
+  function submitHandler(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    dispatch(setStudent(buildStudent()));
+  }
   return (
-    <div className={styles.formWrapper}>
+    <form className={styles.formWrapper} onSubmit={submitHandler}>
       <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
-        <input type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} />
+        <input
+          type="text"
+          required={true}
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+        />
       </label>
       <label className={styles.row}>
         <span>Długość lekcji</span>
@@ -86,11 +94,9 @@ function StudentScreen() {
       </div>
       <div className={styles.buttonPanel}>
         <DCButton onClick={() => dispatch(showSchedulerScreen())}>Anuluj</DCButton>
-        <DCButton onClick={() => dispatch(setStudent(loadStudent()))}>
-          {student.id > -1 ? "Zapisz" : "Dodaj"}
-        </DCButton>
+        <DCButton type="submit">{student.id > -1 ? "Zapisz" : "Dodaj"}</DCButton>
       </div>
-    </div>
+    </form>
   );
 }
 

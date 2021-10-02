@@ -7,9 +7,10 @@ type GridProps = {
   selectedRow: number;
   onSelect: (index: number) => void;
   listenOutside?: boolean;
+  [propName: string]: any;
 };
 
-function GridList({ className, rows, selectedRow, onSelect, listenOutside }: GridProps) {
+function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {
@@ -25,7 +26,7 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside }: Gri
     }
   }, [onSelect, listenOutside]);
   return (
-    <div ref={schedulerScreen} className={styles.gridList + " " + className}>
+    <div {...rest} ref={schedulerScreen} className={styles.gridList + " " + className}>
       <table>
         <tbody>
           {rows.map((row, i) => (

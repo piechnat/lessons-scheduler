@@ -1,33 +1,38 @@
 import { useEffect, useState } from "react";
+import DCButton from "../components/DCButton";
 import GridList from "../components/GridList";
 import { useAppDispatch, useAppSelector } from "../redux";
 import { UNIT, DAY_NAMES, periodToStr, range } from "../utils";
 import Period from "../utils/Period";
 import Student, { StudentPlane } from "../utils/Student";
-import { changeScreen, Screen, setStudent } from "./appSlice";
+import { Screen, setStudent, showSchedulerScreen } from "./appSlice";
 import styles from "./styles.module.scss";
 
 function StudentScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
   const dispatch = useAppDispatch();
+
   const student: StudentPlane =
     useAppSelector((state) =>
       state.app.activeScreen === Screen.STUDENT_EDIT
-        ? state.app.students.find((student) => student.id === state.app.studentId)
+        ? state.app.students.find((student) => student.id === state.app.selectedStudentId)
         : null
     ) ?? new Student().toPlain();
+
   const [studentName, setStudentName] = useState(student.name);
   const [lessonLength, setlessonLength] = useState(student.lesson.length);
   const [periodList, setPeriodList] = useState(student.periods);
   const [periodIndex, setPeriodIndex] = useState(-1);
+
   function loadStudent(): StudentPlane {
     return new Student(
       student.id,
       studentName,
-      new Period(0, lessonLength),
+      new Period(student.lesson.begin, lessonLength),
       periodList.map((period) => new Period(period.begin, period.length))
     ).toPlain();
   }
+
   return (
     <div className={styles.formWrapper}>
       <label className={styles.row}>
@@ -54,15 +59,15 @@ function StudentScreen() {
         />
       </label>
       <div className={styles.row}>
-        <button>Edytuj</button>
-        <button
+        <DCButton>Edytuj</DCButton>
+        <DCButton
           onClick={() => {
             setPeriodList(periodList.filter((period, index) => index !== periodIndex));
             setPeriodIndex(-1);
           }}
         >
           Usuń
-        </button>
+        </DCButton>
       </div>
       <label className={styles.row}>
         <span>Dzień tygodnia</span>
@@ -76,14 +81,14 @@ function StudentScreen() {
       </label>
       Czas rozpoczęcia Czas zakończenia
       <div className={styles.row}>
-        <button>Dodaj</button>
-        <button>Zapisz</button>
+        <DCButton>Dodaj</DCButton>
+        <DCButton>Zapisz</DCButton>
       </div>
       <div className={styles.buttonPanel}>
-        <button onClick={() => dispatch(changeScreen(Screen.SCHEDULER))}>Anuluj</button>
-        <button onClick={() => dispatch(setStudent(loadStudent()))}>
+        <DCButton onClick={() => dispatch(showSchedulerScreen())}>Anuluj</DCButton>
+        <DCButton onClick={() => dispatch(setStudent(loadStudent()))}>
           {student.id > -1 ? "Zapisz" : "Dodaj"}
-        </button>
+        </DCButton>
       </div>
     </div>
   );

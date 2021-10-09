@@ -10,7 +10,7 @@ type GridProps = {
   [propName: string]: any;
 };
 
-function GridList({className, rows, selectedRow, onSelect, listenOutside, ...rest}: GridProps) {
+function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {
@@ -30,11 +30,7 @@ function GridList({className, rows, selectedRow, onSelect, listenOutside, ...res
       <table>
         <tbody>
           {rows.map((row, i) => (
-            <tr
-              key={i}
-              className={selectedRow === i ? "selected" : ""}
-              onClick={() => onSelect(i)}
-            >
+            <tr key={i} className={selectedRow === i ? "selected" : ""} onClick={() => onSelect(i)}>
               {row.map((col, j) => (
                 <td key={j}>{col}</td>
               ))}
@@ -45,6 +41,5 @@ function GridList({className, rows, selectedRow, onSelect, listenOutside, ...res
     </div>
   );
 }
-
 
 export default GridList;

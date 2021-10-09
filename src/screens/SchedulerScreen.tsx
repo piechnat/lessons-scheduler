@@ -17,7 +17,6 @@ function SchedulerScreen() {
   return (
     <div className={styles.formWrapper}>
       <GridList
-        dupa={1}
         className={styles.gridList}
         selectedRow={studentList.findIndex((student) => student.id === studentId)}
         onSelect={(index) => setStudentId(studentList[index]?.id ?? -1)}

@@ -1,21 +1,19 @@
 import { range, SDate } from "../utils";
 
 type TimePickerProps = {
-  time: number;
-  onChange: (time: number) => void;
-  minHour?: number;
-  maxHour?: number;
+  date: SDate;
+  onChange: (date: SDate) => void;
+  hourRange?: [number, number];
 };
 
-function TimePicker({ time, onChange, minHour = 0, maxHour = 23 }: TimePickerProps) {
-  const date = new SDate(time);
+function TimePicker({ date, onChange, hourRange: [min, max] = [0, 23] }: TimePickerProps) {
   return (
     <>
       <select
         value={date.getHours()}
-        onChange={(e) => onChange(date.setHours(parseInt(e.target.value)).getTime())}
+        onChange={(e) => onChange(date.setHours(parseInt(e.target.value)))}
       >
-        {range(minHour, maxHour).map((value) => (
+        {range(min, max).map((value) => (
           <option key={value} value={value}>
             {value.toString().padStart(2, "0")}
           </option>
@@ -23,7 +21,7 @@ function TimePicker({ time, onChange, minHour = 0, maxHour = 23 }: TimePickerPro
       </select>:
       <select
         value={date.getMinutes()}
-        onChange={(e) => onChange(date.setMinutes(parseInt(e.target.value)).getTime())}
+        onChange={(e) => onChange(date.setMinutes(parseInt(e.target.value)))}
       >
         {range(0, Math.floor(SDate.HOUR) - 1).map((value) => {
           value *= SDate.UNIT;

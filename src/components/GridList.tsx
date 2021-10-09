@@ -10,7 +10,7 @@ type GridProps = {
   [propName: string]: any;
 };
 
-function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
+function GridList({className, rows, selectedRow, onSelect, listenOutside, ...rest}: GridProps) {
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {
@@ -18,7 +18,7 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
       const clickOutsideHandler = (e: any) => {
         const elm = schedulerScreen.current;
         if (root && root.contains(e.target) && elm && !elm.contains(e.target)) {
-          onSelect(-1)
+          onSelect(-1);
         }
       };
       document.addEventListener("click", clickOutsideHandler);
@@ -45,5 +45,6 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
     </div>
   );
 }
+
 
 export default GridList;

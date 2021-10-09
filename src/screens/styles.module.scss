@@ -14,10 +14,10 @@
 }
 
 .formWrapper {
-  .buttonPanel {
+  .flexPanel {
     display: flex;
     flex-wrap: nowrap;
-    button {
+    & > * {
       flex-grow: 1;
       margin-right: 0;
     }
@@ -85,5 +85,8 @@
       display: block;
       margin: 0 0.5em 0.5em 0;
     }
+  }
+  .error {
+    color: red;
   }
 }

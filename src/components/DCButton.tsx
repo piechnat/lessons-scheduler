@@ -8,9 +8,9 @@ type DCButtonProps = {
 
 const DCButton = ({ onClick, ms = 100, ...rest }: DCButtonProps) =>
   onClick ? (
-    <button {...rest} onClick={() => setTimeout(onClick, ms)}></button>
+    <button type="button" {...rest} onClick={() => setTimeout(onClick, ms)}></button>
   ) : (
-    <button {...rest}></button>
+    <button type="button" {...rest}></button>
   );
 
 export default DCButton; // delayed click button

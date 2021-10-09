@@ -24,7 +24,7 @@ function SchedulerScreen() {
         rows={studentList.map((student) => [student.name, periodToStr(student.lesson)])}
         listenOutside={true}
       />
-      <div className={styles.buttonPanel}>
+      <div className={styles.flexPanel}>
         <DCButton>Szukaj</DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj

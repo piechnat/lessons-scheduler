@@ -2,7 +2,7 @@ import SchedulerScreen from "./SchedulerScreen";
 import styles from "./App.module.scss";
 import { useAppDispatch, useAppSelector } from "../redux";
 import StudentScreen from "./StudentScreen";
-import { Screen, showSchedulerScreen } from "./appSlice";
+import { showSchedulerScreen } from "./appSlice";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -22,10 +22,10 @@ function App() {
         </div>
         {(() => {
           switch (activeScreen) {
-            case Screen.SCHEDULER:
+            case "SCHEDULER":
               return <SchedulerScreen />;
-            case Screen.STUDENT_ADD:
-            case Screen.STUDENT_EDIT:
+            case "STUDENT_ADD":
+            case "STUDENT_EDIT":
               return <StudentScreen />;
           }
         })()}

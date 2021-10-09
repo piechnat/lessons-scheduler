@@ -3,21 +3,15 @@ import { StudentPlane } from "../utils/Student";
 import { SchedulerPlane } from "../utils/Scheduler";
 import mainScheduler from "../utils/mainScheduler";
 
-export enum Screen {
-  SCHEDULER,
-  STUDENT_ADD,
-  STUDENT_EDIT,
-}
-
 interface AppState {
   selectedStudentId: number;
-  activeScreen: Screen;
+  activeScreen: "SCHEDULER" | "STUDENT_ADD" | "STUDENT_EDIT";
   students: SchedulerPlane;
 }
 
 const initialState: AppState = {
   selectedStudentId: -1,
-  activeScreen: Screen.SCHEDULER,
+  activeScreen: "SCHEDULER",
   students: mainScheduler.toPlain(),
 };
 
@@ -26,14 +20,14 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     showSchedulerScreen: (state) => {
-      state.activeScreen = Screen.SCHEDULER;
+      state.activeScreen = "SCHEDULER";
     },
     showStudentScreen: (state, { payload: studentId = -1 }: PayloadAction<number | undefined>) => {
       if (studentId > -1) {
         state.selectedStudentId = studentId;
-        state.activeScreen = Screen.STUDENT_EDIT;
+        state.activeScreen = "STUDENT_EDIT";
       } else {
-        state.activeScreen = Screen.STUDENT_ADD;
+        state.activeScreen = "STUDENT_ADD";
       }
     },
     setStudentId: (state, { payload: newId }: PayloadAction<number>) => {
@@ -60,7 +54,7 @@ const appSlice = createSlice({
         );
       }
       if (success) {
-        state.activeScreen = Screen.SCHEDULER;
+        state.activeScreen = "SCHEDULER";
       }
     },
   },

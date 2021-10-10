@@ -1,9 +1,8 @@
-import React from "react";
 import SchedulerScreen from "./SchedulerScreen";
 import styles from "./App.module.scss";
 import { useAppDispatch, useAppSelector } from "../redux";
 import StudentScreen from "./StudentScreen";
-import { changeScreen, Screen } from "./appSlice";
+import { showSchedulerScreen } from "./appSlice";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -17,15 +16,16 @@ function App() {
       </div>
       <div className={styles.content}>
         <div>
-          <h1 className={styles.title} onClick={() => dispatch(changeScreen(Screen.SCHEDULER))}>
+          <h1 className={styles.title} onClick={() => dispatch(showSchedulerScreen())}>
             Lessons Scheduler <span> by Mateusz Piechnat</span>
           </h1>
         </div>
         {(() => {
           switch (activeScreen) {
-            case Screen.SCHEDULER:
+            case "SCHEDULER":
               return <SchedulerScreen />;
-            case Screen.STUDENT:
+            case "STUDENT_ADD":
+            case "STUDENT_EDIT":
               return <StudentScreen />;
           }
         })()}

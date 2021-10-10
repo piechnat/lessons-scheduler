@@ -1,74 +1,156 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import DCButton from "../components/DCButton";
 import GridList from "../components/GridList";
-import { useAppSelector } from "../redux";
-import { UNIT, DAY_NAMES, periodToStr, range } from "../utils";
-import Student, { StudentPlane } from "../utils/Student";
+import TimePicker from "../components/TimePicker";
+import { useAppDispatch, useAppSelector } from "../redux";
+import { periodToStr, range, SDate } from "../utils";
+import Period, { PeriodPlane } from "../utils/Period";
+import Student from "../utils/Student";
+import { setStudent, showSchedulerScreen } from "./appSlice";
 import styles from "./styles.module.scss";
 
-function StudentScreen() {
-  useEffect(() => window.scrollTo(0, 0), []);
-  const student: StudentPlane =
-    useAppSelector((state) =>
-      state.app.students.find((student) => student.id === state.app.studentId)
-    ) ?? new Student().toPlain();
+type FormFields = {
+  studentName: string;
+  lessonLength: number;
+  periodsList: PeriodPlane[];
+};
 
-  const [studentName, setStudentName] = useState(student.name);
-  const [lessonLength, setlessonLength] = useState(student.lesson.length);
-  const [periodList, setPeriodList] = useState(student.periods);
-  const [periodIndex, setPeriodIndex] = useState(-1);
+function StudentScreen() {
+  const {
+      register,
+      handleSubmit,
+      setValue,
+      getValues,
+      trigger,
+      formState: { errors, isSubmitted },
+    } = useForm<FormFields>(),
+    defStudent =
+      useAppSelector((state) =>
+        state.app.activeScreen === "STUDENT_EDIT"
+          ? state.app.students.find((student) => student.id === state.app.selectedStudentId)
+          : null
+      ) ?? new Student().toPlain(),
+    [state, _setState] = useState({
+      list: defStudent.periods,
+      index: -1,
+      begin: new SDate(0, 15, 0),
+      end: new SDate(0, 16, 0),
+    }),
+    dispatch = useAppDispatch();
+
+  const setState = (newState: object) => _setState({ ...state, ...newState }),
+    FormError = ({ name, message }: { name: string; message?: string }) => {
+      const error = (errors as any)?.[name];
+      return error ? <p className={styles.error}>{message ?? error.message}</p> : null;
+    },
+    getEditedPeriod = () => ({
+      begin: state.begin.getTime(),
+      length: state.end.getTime() - state.begin.getTime(),
+    }),
+    onListSelect = (index: number) => {
+      const { begin, length } = state.list[index];
+      setState({ index: index, begin: new SDate(begin), end: new SDate(begin + length) });
+    },
+    onRemoveClick = () =>
+      setState({ list: state.list.filter((v, i) => i !== state.index), index: -1 }),
+    onSaveClick = () =>
+      setState({ list: state.list.map((v, i) => (i === state.index ? getEditedPeriod() : v)) }),
+    onAddClick = () => setState({ list: [...state.list, getEditedPeriod()] }),
+    onDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
+      const day = parseInt(e.target.value) || 0;
+      setState({ begin: state.begin.setDay(day), end: state.end.setDay(day) });
+    },
+    onBeginChange = (date: SDate) => setState({ begin: date }),
+    onEndChange = (date: SDate) => setState({ end: date }),
+    onCancelClick = () => dispatch(showSchedulerScreen()),
+    onSubmit = (data: FormFields) => {
+      const student = new Student(
+        defStudent.id,
+        data.studentName,
+        new Period(state.list[0].begin, data.lessonLength),
+        state.list.map((period) => new Period(period.begin, period.length))
+      ).toPlain();
+      dispatch(setStudent(student));
+    };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    register("periodsList", {
+      required: "Należy dodać przynajmniej jeden okres",
+      validate: (list) => {
+        const lessonLength = getValues("lessonLength"),
+          success = list.every((period) => period.length >= lessonLength);
+        return success || "Żaden okres nie może być krótszy niż długość lekcji";
+      },
+    });
+  }, [register, getValues]);
+
+  useEffect(() => {
+    setValue("periodsList", state.list);
+    isSubmitted && trigger("periodsList");
+  }, [setValue, isSubmitted, trigger, state.list]);
 
   return (
-    <div className={styles.formWrapper}>
-      <label>
+    <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
+      <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
-        <input type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} />
+        <input {...register("studentName", { required: true })} defaultValue={defStudent.name} />
       </label>
-      <label>
+      <FormError name="studentName" message="To pole jest wymagane" />
+      <label className={styles.row}>
         <span>Długość lekcji</span>
-        <select value={lessonLength} onChange={(e) => setlessonLength(parseInt(e.target.value))}>
-          {range(1, 45 / UNIT).map((value) => (
+        <select
+          {...register("lessonLength", { valueAsNumber: true })}
+          defaultValue={defStudent.lesson.length}
+        >
+          {range(1, 45 / SDate.UNIT).map((value) => (
             <option key={value} value={value}>
-              {value * UNIT} minut
+              {value * SDate.UNIT} minut
             </option>
           ))}
         </select>
       </label>
-      <label>
+      <label className={styles.row}>
         <span>Okresy dostępności ucznia</span>
         <GridList
           className={styles.gridList}
-          rows={periodList.map((period) => [periodToStr(period)])}
-          selectedRow={periodIndex}
-          onSelect={(index) => setPeriodIndex(index)}
+          rows={state.list.map((period) => [periodToStr(period)])}
+          selectedRow={state.index}
+          onSelect={onListSelect}
         />
       </label>
-      <label>
-        <button>Edytuj</button>
-        <button
-          onClick={() => {
-            setPeriodList(periodList.filter((period, index) => index !== periodIndex));
-            setPeriodIndex(-1);
-          }}
-        >
-          Usuń
-        </button>
-      </label>
-      <label>
-        <span>Dzień tygodnia</span>
-        <select>
-          {DAY_NAMES.map((name, index) => (
-            <option key={index} value={index}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      Czas rozpoczęcia Czas zakończenia
-      <label>
-        <button>Dodaj</button>
-        <button>Zapisz</button>
-      </label>
-    </div>
+      <FormError name="periodsList" />
+      <div className={styles.row}>
+        <DCButton onClick={onRemoveClick}>Usuń</DCButton>
+        <DCButton onClick={onSaveClick}>Zapisz</DCButton>
+        <DCButton onClick={onAddClick}>Dodaj</DCButton>
+      </div>
+      <div className={styles.flexPanel}>
+        <label className={styles.row}>
+          <span>Dzień</span>
+          <select value={state.begin.getDay()} onChange={onDayChange}>
+            {SDate.DAY_NAMES.map((name, index) => (
+              <option key={index} value={index}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={styles.row}>
+          <span>Rozpoczęcie</span>
+          <TimePicker hourRange={[13, 21]} date={state.begin} onChange={onBeginChange} />
+        </label>
+        <label className={styles.row}>
+          <span>Zakończenie</span>
+          <TimePicker hourRange={[13, 21]} date={state.end} onChange={onEndChange} />
+        </label>
+      </div>
+      <div className={styles.flexPanel}>
+        <DCButton onClick={onCancelClick}>Anuluj</DCButton>
+        <DCButton type="submit">{defStudent.id >= 0 ? "Zapisz" : "Dodaj"}</DCButton>
+      </div>
+    </form>
   );
 }
 

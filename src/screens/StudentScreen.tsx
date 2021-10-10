@@ -1,9 +1,8 @@
-import { ErrorMessage } from "@hookform/error-message";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import DCButton from "../components/DCButton";
 import GridList from "../components/GridList";
-import TimePicker from "../components/LessonTime";
+import TimePicker from "../components/TimePicker";
 import { useAppDispatch, useAppSelector } from "../redux";
 import { periodToStr, range, SDate } from "../utils";
 import Period, { PeriodPlane } from "../utils/Period";
@@ -41,25 +40,14 @@ function StudentScreen() {
     dispatch = useAppDispatch();
 
   const setState = (newState: object) => _setState({ ...state, ...newState }),
+    FormError = ({ name, message }: { name: string; message?: string }) => {
+      const error = (errors as any)?.[name];
+      return error ? <p className={styles.error}>{message ?? error.message}</p> : null;
+    },
     getEditedPeriod = () => ({
       begin: state.begin.getTime(),
       length: state.end.getTime() - state.begin.getTime(),
     }),
-    FormError = ({ name, message }: { name: string; message?: string }) => (
-      <p className={styles.error}>
-        <ErrorMessage name={name} errors={errors} message={message} />
-      </p>
-    ),
-    onCancelClick = () => dispatch(showSchedulerScreen()),
-    onSubmit = (data: FormFields) => {
-      const student = new Student(
-        defStudent.id,
-        data.studentName,
-        new Period(state.list[0].begin, data.lessonLength),
-        state.list.map((period) => new Period(period.begin, period.length))
-      ).toPlain();
-      dispatch(setStudent(student));
-    },
     onListSelect = (index: number) => {
       const { begin, length } = state.list[index];
       setState({ index: index, begin: new SDate(begin), end: new SDate(begin + length) });
@@ -74,7 +62,17 @@ function StudentScreen() {
       setState({ begin: state.begin.setDay(day), end: state.end.setDay(day) });
     },
     onBeginChange = (date: SDate) => setState({ begin: date }),
-    onEndChange = (date: SDate) => setState({ end: date.setDay(state.begin.getDay()) });
+    onEndChange = (date: SDate) => setState({ end: date }),
+    onCancelClick = () => dispatch(showSchedulerScreen()),
+    onSubmit = (data: FormFields) => {
+      const student = new Student(
+        defStudent.id,
+        data.studentName,
+        new Period(state.list[0].begin, data.lessonLength),
+        state.list.map((period) => new Period(period.begin, period.length))
+      ).toPlain();
+      dispatch(setStudent(student));
+    };
 
   useEffect(() => {
     window.scrollTo(0, 0);

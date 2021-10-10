@@ -1,3 +1,4 @@
+import { ErrorMessage } from "@hookform/error-message";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import DCButton from "../components/DCButton";
@@ -17,7 +18,14 @@ type FormFields = {
 };
 
 function StudentScreen() {
-  const dispatch = useAppDispatch(),
+  const {
+      register,
+      handleSubmit,
+      setValue,
+      getValues,
+      trigger,
+      formState: { errors, isSubmitted },
+    } = useForm<FormFields>(),
     defStudent =
       useAppSelector((state) =>
         state.app.activeScreen === "STUDENT_EDIT"
@@ -30,20 +38,18 @@ function StudentScreen() {
       begin: new SDate(0, 15, 0),
       end: new SDate(0, 16, 0),
     }),
-    {
-      register,
-      handleSubmit,
-      setValue,
-      getValues,
-      trigger,
-      formState: { errors, isSubmitted },
-    } = useForm<FormFields>();
+    dispatch = useAppDispatch();
 
   const setState = (newState: object) => _setState({ ...state, ...newState }),
     getEditedPeriod = () => ({
       begin: state.begin.getTime(),
       length: state.end.getTime() - state.begin.getTime(),
     }),
+    errorMessage = (name: string, message?: string) => (
+      <p className={styles.error}>
+        <ErrorMessage name={name} errors={errors} message={message} />
+      </p>
+    ),
     onCancelClick = () => dispatch(showSchedulerScreen()),
     onSubmit = (data: FormFields) => {
       const student = new Student(
@@ -63,21 +69,25 @@ function StudentScreen() {
     onSaveClick = () =>
       setState({ list: state.list.map((v, i) => (i === state.index ? getEditedPeriod() : v)) }),
     onAddClick = () => setState({ list: [...state.list, getEditedPeriod()] }),
-    onDayChange = (e: ChangeEvent<HTMLSelectElement>) =>
-      setState({ begin: state.begin.setDay(parseInt(e.target.value)) }),
+    onDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
+      const day = parseInt(e.target.value) || 0;
+      setState({ begin: state.begin.setDay(day), end: state.end.setDay(day) });
+    },
     onBeginChange = (date: SDate) => setState({ begin: date }),
     onEndChange = (date: SDate) => setState({ end: date.setDay(state.begin.getDay()) });
 
   useEffect(() => {
     window.scrollTo(0, 0);
     register("periodsList", {
-      required: true,
+      required: "Należy dodać przynajmniej jeden okres",
       validate: (list) => {
-        const lessonLength = getValues("lessonLength");
-        return list.every((period) => period.length >= lessonLength);
+        const lessonLength = getValues("lessonLength"),
+          success = list.every((period) => period.length >= lessonLength);
+        return success || "Żaden okres nie może być krótszy niż długość lekcji";
       },
     });
   }, [register, getValues]);
+
   useEffect(() => {
     setValue("periodsList", state.list);
     isSubmitted && trigger("periodsList");
@@ -89,7 +99,7 @@ function StudentScreen() {
         <span>Imię i nazwisko ucznia</span>
         <input {...register("studentName", { required: true })} defaultValue={defStudent.name} />
       </label>
-      {errors.studentName && <p className={styles.error}>To pole jest wymagane</p>}
+      {errorMessage("studentName", "To pole jest wymagane")}
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select
@@ -112,7 +122,7 @@ function StudentScreen() {
           onSelect={onListSelect}
         />
       </label>
-      {errors.periodsList && <p className={styles.error}>Należy dodać przynajmniej jeden okres</p>}
+      {errorMessage("periodsList")}
       <div className={styles.row}>
         <DCButton onClick={onRemoveClick}>Usuń</DCButton>
         <DCButton onClick={onSaveClick}>Zapisz</DCButton>

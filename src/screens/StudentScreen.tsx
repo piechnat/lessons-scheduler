@@ -45,7 +45,7 @@ function StudentScreen() {
       begin: state.begin.getTime(),
       length: state.end.getTime() - state.begin.getTime(),
     }),
-    errorMessage = (name: string, message?: string) => (
+    FormError = ({ name, message }: { name: string; message?: string }) => (
       <p className={styles.error}>
         <ErrorMessage name={name} errors={errors} message={message} />
       </p>
@@ -99,7 +99,7 @@ function StudentScreen() {
         <span>Imię i nazwisko ucznia</span>
         <input {...register("studentName", { required: true })} defaultValue={defStudent.name} />
       </label>
-      {errorMessage("studentName", "To pole jest wymagane")}
+      <FormError name="studentName" message="To pole jest wymagane" />
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select
@@ -122,7 +122,7 @@ function StudentScreen() {
           onSelect={onListSelect}
         />
       </label>
-      {errorMessage("periodsList")}
+      <FormError name="periodsList" />
       <div className={styles.row}>
         <DCButton onClick={onRemoveClick}>Usuń</DCButton>
         <DCButton onClick={onSaveClick}>Zapisz</DCButton>

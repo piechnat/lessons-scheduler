@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
 
 function SchedulerScreen() {
+  //console.log('SchedulerScreen Render');
   useEffect(() => window.scrollTo(0, 0), []);
   const dispatch = useAppDispatch();
   const [studentId, setStudentId] = useState(

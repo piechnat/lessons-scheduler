@@ -1,6 +1,7 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, memo, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import DCButton from "../components/DCButton";
+import useFormError from "../components/FormError";
 import GridList from "../components/GridList";
 import TimePicker from "../components/TimePicker";
 import { useAppDispatch, useAppSelector } from "../redux";
@@ -10,6 +11,13 @@ import Student from "../utils/Student";
 import { setStudent, showSchedulerScreen } from "./appSlice";
 import styles from "./styles.module.scss";
 
+function _Test({ test, callback }: { test: string, callback: () => void }) {
+  callback();
+  //console.log('Test Render');
+  return <>{test}</>;
+}
+const Test = memo(_Test);
+
 type FormFields = {
   studentName: string;
   lessonLength: number;
@@ -17,6 +25,10 @@ type FormFields = {
 };
 
 function StudentScreen() {
+  //console.log('StudentScreen Render');
+
+  const [Error, handleSubmit1] = useFormError((s) => <p style={{color:"blue"}}>{s}</p>);
+
   const {
       register,
       handleSubmit,
@@ -36,6 +48,7 @@ function StudentScreen() {
       index: -1,
       begin: new SDate(0, 15, 0),
       end: new SDate(0, 16, 0),
+      test: "dupaTEST"
     }),
     dispatch = useAppDispatch();
 
@@ -50,7 +63,7 @@ function StudentScreen() {
     }),
     onListSelect = (index: number) => {
       const { begin, length } = state.list[index];
-      setState({ index: index, begin: new SDate(begin), end: new SDate(begin + length) });
+      setState({ index: index/*, begin: new SDate(begin), end: new SDate(begin + length)*/ });
     },
     onRemoveClick = () =>
       setState({ list: state.list.filter((v, i) => i !== state.index), index: -1 }),
@@ -59,10 +72,10 @@ function StudentScreen() {
     onAddClick = () => setState({ list: [...state.list, getEditedPeriod()] }),
     onDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
       const day = parseInt(e.target.value) || 0;
-      setState({ begin: state.begin.setDay(day), end: state.end.setDay(day) });
+      setState({ begin: state.begin.clone().setDay(day), end: state.end.clone().setDay(day) });
     },
-    onBeginChange = (date: SDate) => setState({ begin: date }),
-    onEndChange = (date: SDate) => setState({ end: date }),
+    onBeginChange = (time: number) => setState({ begin: new SDate(time) }),
+    onEndChange = (time: number) => setState({ end: new SDate(time) }),
     onCancelClick = () => dispatch(showSchedulerScreen()),
     onSubmit = (data: FormFields) => {
       const student = new Student(
@@ -91,12 +104,16 @@ function StudentScreen() {
     isSubmitted && trigger("periodsList");
   }, [setValue, isSubmitted, trigger, state.list]);
 
+  const callback = ()=>{};
+
   return (
-    <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
+    <form className={styles.formWrapper} onSubmit={handleSubmit1()}>
+      <Test test={state.test} callback={callback} />
       <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
         <input {...register("studentName", { required: true })} defaultValue={defStudent.name} />
       </label>
+      <Error variable={state.index} check={(v) => v > 1 ? "dupa" : true} />
       <FormError name="studentName" message="To pole jest wymagane" />
       <label className={styles.row}>
         <span>Długość lekcji</span>
@@ -139,17 +156,18 @@ function StudentScreen() {
         </label>
         <label className={styles.row}>
           <span>Rozpoczęcie</span>
-          <TimePicker hourRange={[13, 21]} date={state.begin} onChange={onBeginChange} />
+          <TimePicker hourRange={[13, 21]} time={state.begin.getTime()} onChange={onBeginChange} />
         </label>
         <label className={styles.row}>
           <span>Zakończenie</span>
-          <TimePicker hourRange={[13, 21]} date={state.end} onChange={onEndChange} />
+          <TimePicker hourRange={[13, 21]} time={state.end.getTime()} onChange={onEndChange} />
         </label>
       </div>
       <div className={styles.flexPanel}>
         <DCButton onClick={onCancelClick}>Anuluj</DCButton>
         <DCButton type="submit">{defStudent.id >= 0 ? "Zapisz" : "Dodaj"}</DCButton>
       </div>
+      <Test test={state.test} callback={callback} />
     </form>
   );
 }

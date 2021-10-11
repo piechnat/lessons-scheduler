@@ -11,6 +11,7 @@ type GridProps = {
 };
 
 function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
+  //console.log('GridList Render');
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {

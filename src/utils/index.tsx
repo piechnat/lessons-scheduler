@@ -75,6 +75,9 @@ export class SDate {
   toString(): string {
     return this.toDay() + " " + this.toTime();
   }
+  clone(): SDate {
+    return Object.assign(new SDate(), this);
+  }
 }
 
 export function periodToStr(period: PeriodPlane): string {

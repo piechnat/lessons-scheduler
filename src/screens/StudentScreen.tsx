@@ -1,4 +1,4 @@
-import { ChangeEvent, memo, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import DCButton from "../components/DCButton";
 import useFormError from "../components/FormError";
@@ -11,32 +11,29 @@ import Student from "../utils/Student";
 import { setStudent, showSchedulerScreen } from "./appSlice";
 import styles from "./styles.module.scss";
 
-function _Test({ test, callback }: { test: string, callback: () => void }) {
-  callback();
-  //console.log('Test Render');
-  return <>{test}</>;
-}
-const Test = memo(_Test);
+const LessonLengthList = memo(() => (
+  <>
+    {range(1, 45 / SDate.UNIT).map((value) => (
+      <option key={value} value={value}>
+        {value * SDate.UNIT} minut
+      </option>
+    ))}
+  </>
+));
 
-type FormFields = {
-  studentName: string;
-  lessonLength: number;
-  periodsList: PeriodPlane[];
-};
+const DayNameList = memo(() => (
+  <>
+    {SDate.DAY_NAMES.map((name, index) => (
+      <option key={index} value={index}>
+        {name}
+      </option>
+    ))}
+  </>
+));
 
 function StudentScreen() {
-  //console.log('StudentScreen Render');
-
-  const [Error, handleSubmit1] = useFormError((s) => <p style={{color:"blue"}}>{s}</p>);
-
-  const {
-      register,
-      handleSubmit,
-      setValue,
-      getValues,
-      trigger,
-      formState: { errors, isSubmitted },
-    } = useForm<FormFields>(),
+  console.log("StudentScreen Render");
+  const dispatch = useAppDispatch(),
     defStudent =
       useAppSelector((state) =>
         state.app.activeScreen === "STUDENT_EDIT"
@@ -44,130 +41,112 @@ function StudentScreen() {
           : null
       ) ?? new Student().toPlain(),
     [state, _setState] = useState({
+      name: defStudent.name,
+      length: defStudent.lesson.length,
       list: defStudent.periods,
       index: -1,
       begin: new SDate(0, 15, 0),
       end: new SDate(0, 16, 0),
-      test: "dupaTEST"
     }),
-    dispatch = useAppDispatch();
-
-  const setState = (newState: object) => _setState({ ...state, ...newState }),
-    FormError = ({ name, message }: { name: string; message?: string }) => {
-      const error = (errors as any)?.[name];
-      return error ? <p className={styles.error}>{message ?? error.message}</p> : null;
-    },
-    getEditedPeriod = () => ({
+    setState = useCallback((p: Partial<typeof state>) => _setState((s) => ({ ...s, ...p })), []),
+    editedPeriod = () => ({
       begin: state.begin.getTime(),
       length: state.end.getTime() - state.begin.getTime(),
     }),
-    onListSelect = (index: number) => {
-      const { begin, length } = state.list[index];
-      setState({ index: index/*, begin: new SDate(begin), end: new SDate(begin + length)*/ });
-    },
-    onRemoveClick = () =>
+    [Error, handleSubmit] = useFormError((s) => <p className={styles.error}>{s}</p>),
+    handleNameChange = (e: ChangeEvent<HTMLInputElement>) => setState({ name: e.target.value }),
+    handleLengthChange = (e: ChangeEvent<HTMLSelectElement>) =>
+      setState({ length: parseInt(e.target.value) }),
+    listAsRows = useMemo(() => state.list.map((period) => [periodToStr(period)]), [state.list]),
+    handleListSelect = useCallback(
+      (index: number) => {
+        const { begin, length } = state.list[index];
+        setState({ index: index, begin: new SDate(begin), end: new SDate(begin + length) });
+      },
+      [setState, state.list]
+    ),
+    handleRemoveClick = () =>
       setState({ list: state.list.filter((v, i) => i !== state.index), index: -1 }),
-    onSaveClick = () =>
-      setState({ list: state.list.map((v, i) => (i === state.index ? getEditedPeriod() : v)) }),
-    onAddClick = () => setState({ list: [...state.list, getEditedPeriod()] }),
-    onDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    handleSaveClick = () =>
+      setState({ list: state.list.map((v, i) => (i === state.index ? editedPeriod() : v)) }),
+    handleAddClick = () => setState({ list: [...state.list, editedPeriod()] }),
+    handleDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
       const day = parseInt(e.target.value) || 0;
       setState({ begin: state.begin.clone().setDay(day), end: state.end.clone().setDay(day) });
     },
-    onBeginChange = (time: number) => setState({ begin: new SDate(time) }),
-    onEndChange = (time: number) => setState({ end: new SDate(time) }),
-    onCancelClick = () => dispatch(showSchedulerScreen()),
-    onSubmit = (data: FormFields) => {
+    handleBeginChange = useCallback(
+      (time: number) => setState({ begin: new SDate(time) }),
+      [setState]
+    ),
+    handleEndChange = useCallback((time: number) => setState({ end: new SDate(time) }), [setState]),
+    handleCancelClick = () => dispatch(showSchedulerScreen()),
+    onSubmit = () => {
       const student = new Student(
         defStudent.id,
-        data.studentName,
-        new Period(state.list[0].begin, data.lessonLength),
+        state.name,
+        new Period(state.list[0].begin, state.length),
         state.list.map((period) => new Period(period.begin, period.length))
       ).toPlain();
       dispatch(setStudent(student));
+    },
+    validateList = (list: Array<PeriodPlane>) => {
+      if (list.length <= 0) {
+        return "Należy dodać przynajmniej jeden okres";
+      }
+      return (
+        list.every((period) => period.length >= state.length) ||
+        "Żaden okres nie może być krótszy niż długość lekcji"
+      );
     };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    register("periodsList", {
-      required: "Należy dodać przynajmniej jeden okres",
-      validate: (list) => {
-        const lessonLength = getValues("lessonLength"),
-          success = list.every((period) => period.length >= lessonLength);
-        return success || "Żaden okres nie może być krótszy niż długość lekcji";
-      },
-    });
-  }, [register, getValues]);
-
-  useEffect(() => {
-    setValue("periodsList", state.list);
-    isSubmitted && trigger("periodsList");
-  }, [setValue, isSubmitted, trigger, state.list]);
-
-  const callback = ()=>{};
+  useEffect(() => window.scrollTo(0, 0), []);
 
   return (
-    <form className={styles.formWrapper} onSubmit={handleSubmit1()}>
-      <Test test={state.test} callback={callback} />
+    <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
       <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
-        <input {...register("studentName", { required: true })} defaultValue={defStudent.name} />
+        <input value={state.name} onChange={handleNameChange} />
       </label>
-      <Error variable={state.index} check={(v) => v > 1 ? "dupa" : true} />
-      <FormError name="studentName" message="To pole jest wymagane" />
       <label className={styles.row}>
         <span>Długość lekcji</span>
-        <select
-          {...register("lessonLength", { valueAsNumber: true })}
-          defaultValue={defStudent.lesson.length}
-        >
-          {range(1, 45 / SDate.UNIT).map((value) => (
-            <option key={value} value={value}>
-              {value * SDate.UNIT} minut
-            </option>
-          ))}
+        <select value={state.length} onChange={handleLengthChange}>
+          <LessonLengthList />
         </select>
       </label>
       <label className={styles.row}>
         <span>Okresy dostępności ucznia</span>
         <GridList
           className={styles.gridList}
-          rows={state.list.map((period) => [periodToStr(period)])}
+          rows={listAsRows}
           selectedRow={state.index}
-          onSelect={onListSelect}
+          onSelect={handleListSelect}
         />
       </label>
-      <FormError name="periodsList" />
       <div className={styles.row}>
-        <DCButton onClick={onRemoveClick}>Usuń</DCButton>
-        <DCButton onClick={onSaveClick}>Zapisz</DCButton>
-        <DCButton onClick={onAddClick}>Dodaj</DCButton>
+        <DCButton onClick={handleRemoveClick}>Usuń</DCButton>
+        <DCButton onClick={handleSaveClick}>Zapisz</DCButton>
+        <DCButton onClick={handleAddClick}>Dodaj</DCButton>
       </div>
       <div className={styles.flexPanel}>
         <label className={styles.row}>
           <span>Dzień</span>
-          <select value={state.begin.getDay()} onChange={onDayChange}>
-            {SDate.DAY_NAMES.map((name, index) => (
-              <option key={index} value={index}>
-                {name}
-              </option>
-            ))}
+          <select value={state.begin.getDay()} onChange={handleDayChange}>
+            <DayNameList />
           </select>
         </label>
         <label className={styles.row}>
           <span>Rozpoczęcie</span>
-          <TimePicker hourRange={[13, 21]} time={state.begin.getTime()} onChange={onBeginChange} />
+          <TimePicker min={13} max={21} time={state.begin.getTime()} onChange={handleBeginChange} />
         </label>
         <label className={styles.row}>
           <span>Zakończenie</span>
-          <TimePicker hourRange={[13, 21]} time={state.end.getTime()} onChange={onEndChange} />
+          <TimePicker min={13} max={21} time={state.end.getTime()} onChange={handleEndChange} />
         </label>
       </div>
       <div className={styles.flexPanel}>
-        <DCButton onClick={onCancelClick}>Anuluj</DCButton>
+        <DCButton onClick={handleCancelClick}>Anuluj</DCButton>
         <DCButton type="submit">{defStudent.id >= 0 ? "Zapisz" : "Dodaj"}</DCButton>
       </div>
-      <Test test={state.test} callback={callback} />
     </form>
   );
 }

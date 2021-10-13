@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import styles from "./GridList.module.scss";
 
 type GridProps = {
@@ -11,7 +11,7 @@ type GridProps = {
 };
 
 function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
-  //console.log('GridList Render');
+  console.log("GridList Render");
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {
@@ -43,4 +43,4 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
   );
 }
 
-export default GridList;
+export default memo(GridList);

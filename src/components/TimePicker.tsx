@@ -2,13 +2,14 @@ import { memo } from "react";
 import { range, SDate } from "../utils";
 
 type TimePickerProps = {
+  min?: number;
+  max?: number;
   time: number;
   onChange: (time: number) => void;
-  hourRange?: [number, number];
 };
 
-function TimePicker({ time, onChange, hourRange: [min, max] = [0, 23] }: TimePickerProps) {
-  console.log("TimePicker Render " + time);
+function TimePicker({ time, onChange, min = 0, max = 23 }: TimePickerProps) {
+  console.log("TimePicker Render");
   const date = new SDate(time);
   return (
     <>
@@ -40,5 +41,4 @@ function TimePicker({ time, onChange, hourRange: [min, max] = [0, 23] }: TimePic
   );
 }
 
-//export default TimePicker;
-export default memo(TimePicker, (prevProps, nextProps) => prevProps.time === nextProps.time);
+export default memo(TimePicker);

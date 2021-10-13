@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 type FormErrorProps = { variable?: any; check: ValidateCallbackType };
 type RenderCallbackType = (message: string) => JSX.Element;
@@ -20,7 +20,6 @@ function useFormError(
   }
   function FormError({ variable, check }: FormErrorProps): JSX.Element {
     const result = isSubmitted && check(variable);
-    //console.log('FormError Render ' + result);
     return typeof result === "string" ? render(result) : <></>;
   }
   return [FormError, handleSubmit];

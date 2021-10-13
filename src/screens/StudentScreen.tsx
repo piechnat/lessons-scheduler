@@ -11,24 +11,16 @@ import Student from "../utils/Student";
 import { setStudent, showSchedulerScreen } from "./appSlice";
 import styles from "./styles.module.scss";
 
-const LessonLengthList = memo(() => (
-  <>
-    {range(1, 45 / SDate.UNIT).map((value) => (
-      <option key={value} value={value}>
-        {value * SDate.UNIT} minut
-      </option>
-    ))}
-  </>
+const lessonLengthList = range(1, 45 / SDate.UNIT).map((value) => (
+  <option key={value} value={value}>
+    {value * SDate.UNIT} minut
+  </option>
 ));
 
-const DayNameList = memo(() => (
-  <>
-    {SDate.DAY_NAMES.map((name, index) => (
-      <option key={index} value={index}>
-        {name}
-      </option>
-    ))}
-  </>
+const dayNameList = SDate.DAY_NAMES.map((name, index) => (
+  <option key={index} value={index}>
+    {name}
+  </option>
 ));
 
 function StudentScreen() {
@@ -78,7 +70,7 @@ function StudentScreen() {
       (time: number) => setState({ begin: new SDate(time) }),
       [setState]
     ),
-    handleEndChange = useCallback((time: number) => setState({ end: new SDate(time) }), [setState]),
+    handleEndChange = (time: number) => setState({ end: new SDate(time) }),
     handleCancelClick = () => dispatch(showSchedulerScreen()),
     onSubmit = () => {
       const student = new Student(
@@ -110,7 +102,7 @@ function StudentScreen() {
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select value={state.length} onChange={handleLengthChange}>
-          <LessonLengthList />
+          {lessonLengthList}
         </select>
       </label>
       <label className={styles.row}>
@@ -131,16 +123,26 @@ function StudentScreen() {
         <label className={styles.row}>
           <span>Dzień</span>
           <select value={state.begin.getDay()} onChange={handleDayChange}>
-            <DayNameList />
+            {dayNameList}
           </select>
         </label>
         <label className={styles.row}>
           <span>Rozpoczęcie</span>
-          <TimePicker min={13} max={21} time={state.begin.getTime()} onChange={handleBeginChange} />
+          <TimePicker
+            min={13}
+            max={21}
+            time={state.begin.getTime()}
+            onChange={useCallback(handleBeginChange, [setState])}
+          />
         </label>
         <label className={styles.row}>
           <span>Zakończenie</span>
-          <TimePicker min={13} max={21} time={state.end.getTime()} onChange={handleEndChange} />
+          <TimePicker
+            min={13}
+            max={21}
+            time={state.end.getTime()}
+            onChange={useCallback(handleEndChange, [setState])}
+          />
         </label>
       </div>
       <div className={styles.flexPanel}>

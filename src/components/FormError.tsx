@@ -1,28 +1,32 @@
-import React, { useState } from "react";
+import React, { memo, SFC, useCallback, useEffect, useMemo, useState } from "react";
 
-type FormErrorProps = { variable?: any; check: ValidateCallbackType };
-type RenderCallbackType = (message: string) => JSX.Element;
-type FormErrorComponentType = (props: FormErrorProps) => JSX.Element;
-type ReturnSubmitCallbackType = (callback?: SubmitCallbackType) => SubmitCallbackType;
-type SubmitCallbackType = (e: React.FormEvent<HTMLFormElement>) => void;
-type ValidateCallbackType = (variable?: any) => boolean | string;
+type FormErrorProps<T> = { variable: T; check: (variable: T) => boolean | string };
 
-function useFormError(
-  render: RenderCallbackType
-): [FormErrorComponentType, ReturnSubmitCallbackType] {
+function useFormError(render: (message: string) => JSX.Element) {
   const [isSubmitted, setSubmitted] = useState(false);
-  function handleSubmit(onSubmit?: SubmitCallbackType): SubmitCallbackType {
+  const [errors, setErrors] = useState(0);
+  console.log("useFormError " + errors);
+
+  function FormError<T>({ variable, check }: FormErrorProps<T>): JSX.Element {
+    console.log("FormError Render ");
+    const result = check(variable);
+    const error = typeof result === "string";
+    
+    if (error) setErrors((v) => v + 1);
+    
+    return isSubmitted && error ? render(result as string) : <></>;
+  };
+
+  function handleSubmit(onSubmit?: (isValid: boolean) => void) {
     return (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setSubmitted(true);
-      onSubmit && onSubmit(e);
+      onSubmit && onSubmit(errors === 0);
+      alert(errors);
     };
   }
-  function FormError({ variable, check }: FormErrorProps): JSX.Element {
-    const result = isSubmitted && check(variable);
-    return typeof result === "string" ? render(result) : <></>;
-  }
-  return [FormError, handleSubmit];
+  
+  return { FormError: useMemo(() => FormError, []), handleSubmit: useCallback(handleSubmit, [errors]) };
 }
 
 export default useFormError;

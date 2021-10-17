@@ -1,5 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import DCButton from "../components/DCButton";
 import useFormError from "../components/FormError";
 import GridList from "../components/GridList";
@@ -32,53 +31,21 @@ function StudentScreen() {
           ? state.app.students.find((student) => student.id === state.app.selectedStudentId)
           : null
       ) ?? new Student().toPlain(),
-    initialState = {
-      name: defStudent.name,
-      length: defStudent.lesson.length,
-      list: defStudent.periods,
-      index: -1,
-      begin: new SDate(0, 15, 0),
-      end: new SDate(0, 16, 0),
-    },
-    [_state, _setState] = useState(initialState),
-    setState = useCallback((p: Partial<typeof _state>) => _setState((s) => ({ ...s, ...p })), []),
-    editedPeriod = () => ({
-      begin: _state.begin.getTime(),
-      length: _state.end.getTime() - _state.begin.getTime(),
+    [state, send] = useReducer(studentScreenReducer, {
+      studentName: defStudent.name,
+      lessonLength: defStudent.lesson.length,
+      periodList: defStudent.periods,
+      periodIndex: -1,
+      periodBegin: new SDate(0, 15, 0),
+      periodEnd: new SDate(0, 16, 0),
     }),
-    [Error, handleSubmit] = useFormError((s) => <p className={styles.error}>{s}</p>),
-    handleNameChange = (e: ChangeEvent<HTMLInputElement>) => setState({ name: e.target.value }),
-    handleLengthChange = (e: ChangeEvent<HTMLSelectElement>) =>
-      setState({ length: parseInt(e.target.value) }),
-    listAsRows = useMemo(() => _state.list.map((period) => [periodToStr(period)]), [_state.list]),
-    handleListSelect = useCallback(
-      (index: number) => {
-        const { begin, length } = _state.list[index];
-        setState({ index: index, begin: new SDate(begin), end: new SDate(begin + length) });
-      },
-      [setState, _state.list]
-    ),
-    handleRemoveClick = () =>
-      setState({ list: _state.list.filter((v, i) => i !== _state.index), index: -1 }),
-    handleSaveClick = () =>
-      setState({ list: _state.list.map((v, i) => (i === _state.index ? editedPeriod() : v)) }),
-    handleAddClick = () => setState({ list: [..._state.list, editedPeriod()] }),
-    handleDayChange = (e: ChangeEvent<HTMLSelectElement>) => {
-      const day = parseInt(e.target.value) || 0;
-      setState({ begin: _state.begin.clone().setDay(day), end: _state.end.clone().setDay(day) });
-    },
-    handleBeginChange = useCallback(
-      (time: number) => setState({ begin: new SDate(time) }),
-      [setState]
-    ),
-    handleEndChange = (time: number) => setState({ end: new SDate(time) }),
-    handleCancelClick = () => dispatch(showSchedulerScreen()),
+    { FormError: Error, handleSubmit } = useFormError((s) => <p className={styles.error}>{s}</p>),
     onSubmit = () => {
       const student = new Student(
         defStudent.id,
-        _state.name,
-        new Period(_state.list[0].begin, _state.length),
-        _state.list.map((period) => new Period(period.begin, period.length))
+        state.studentName,
+        new Period(state.periodList[0].begin, state.lessonLength),
+        state.periodList.map((period) => new Period(period.begin, period.length))
       ).toPlain();
       dispatch(setStudent(student));
     },
@@ -87,24 +54,15 @@ function StudentScreen() {
         return "Należy dodać przynajmniej jeden okres";
       }
       return (
-        list.every((period) => period.length >= _state.length) ||
+        list.every((period) => period.length >= state.lessonLength) ||
         "Żaden okres nie może być krótszy niż długość lekcji"
       );
     };
 
   useEffect(() => window.scrollTo(0, 0), []);
 
-  const [state, send] = useReducer(studentScreenReducer, {
-    studentName: defStudent.name,
-    lessonLength: defStudent.lesson.length,
-    periodList: defStudent.periods,
-    periodIndex: -1,
-    periodBegin: new SDate(0, 15, 0),
-    periodEnd: new SDate(0, 16, 0),
-  });
-
   return (
-    <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
+    <form className={styles.formWrapper} onSubmit={handleSubmit()}>
       <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
         <input
@@ -112,6 +70,10 @@ function StudentScreen() {
           onChange={(e) => send(action("studentNameChange", e.target.value))}
         />
       </label>
+      <Error
+        variable={state.studentName}
+        check={(value) => value.length > 0 || "To pole nie może być puste"}
+      />
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select
@@ -125,20 +87,23 @@ function StudentScreen() {
         <span>Okresy dostępności ucznia</span>
         <GridList
           className={styles.gridList}
-          rows={state.periodList.map((period) => [periodToStr(period)])}
+          rows={useMemo(() => state.periodList.map((v) => [periodToStr(v)]), [state.periodList])}
           selectedRow={state.periodIndex}
-          onSelect={(index) => send(action("periodIndexChange", index))}
+          onSelect={useCallback((index) => send(action("periodListSelect", index)), [])}
         />
       </label>
       <div className={styles.row}>
         <DCButton onClick={() => send(action("removeClick", null))}>Usuń</DCButton>
-        <DCButton onClick={handleSaveClick}>Zapisz</DCButton>
-        <DCButton onClick={handleAddClick}>Dodaj</DCButton>
+        <DCButton onClick={() => send(action("saveClick", null))}>Zapisz</DCButton>
+        <DCButton onClick={() => send(action("addClick", null))}>Dodaj</DCButton>
       </div>
       <div className={styles.flexPanel}>
         <label className={styles.row}>
           <span>Dzień</span>
-          <select value={_state.begin.getDay()} onChange={handleDayChange}>
+          <select
+            value={state.periodBegin.getDay()}
+            onChange={(e) => send(action("periodDayChange", parseInt(e.target.value)))}
+          >
             {dayNameList}
           </select>
         </label>
@@ -147,8 +112,8 @@ function StudentScreen() {
           <TimePicker
             min={13}
             max={21}
-            time={_state.begin.getTime()}
-            onChange={useCallback(handleBeginChange, [setState])}
+            time={state.periodBegin.getTime()}
+            onChange={useCallback((time) => send(action("periodBeginChange", time)), [])}
           />
         </label>
         <label className={styles.row}>
@@ -156,13 +121,13 @@ function StudentScreen() {
           <TimePicker
             min={13}
             max={21}
-            time={_state.end.getTime()}
-            onChange={useCallback(handleEndChange, [setState])}
+            time={state.periodEnd.getTime()}
+            onChange={useCallback((time) => send(action("periodEndChange", time)), [])}
           />
         </label>
       </div>
       <div className={styles.flexPanel}>
-        <DCButton onClick={handleCancelClick}>Anuluj</DCButton>
+        <DCButton onClick={() => dispatch(showSchedulerScreen())}>Anuluj</DCButton>
         <DCButton type="submit">{defStudent.id >= 0 ? "Zapisz" : "Dodaj"}</DCButton>
       </div>
     </form>

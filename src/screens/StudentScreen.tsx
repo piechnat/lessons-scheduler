@@ -23,8 +23,8 @@ const dayNameList = SDate.DAY_NAMES.map((name, index) => (
   ));
 
 function StudentScreen() {
-  console.log("StudentScreen Render");
   const dispatch = useAppDispatch(),
+    { FormError, handleSubmit } = useFormError((s) => <p className={styles.error}>{s}</p>),
     defStudent =
       useAppSelector((state) =>
         state.app.activeScreen === "STUDENT_EDIT"
@@ -39,16 +39,18 @@ function StudentScreen() {
       periodBegin: new SDate(0, 15, 0),
       periodEnd: new SDate(0, 16, 0),
     }),
-    { FormError: Error, handleSubmit } = useFormError((s) => <p className={styles.error}>{s}</p>),
-    onSubmit = () => {
-      const student = new Student(
-        defStudent.id,
-        state.studentName,
-        new Period(state.periodList[0].begin, state.lessonLength),
-        state.periodList.map((period) => new Period(period.begin, period.length))
-      ).toPlain();
-      dispatch(setStudent(student));
+    onSubmit = (isValid: boolean) => {
+      if (isValid) {
+        const student = new Student(
+          defStudent.id,
+          state.studentName,
+          new Period(state.periodList[0].begin, state.lessonLength),
+          state.periodList.map((period) => new Period(period.begin, period.length))
+        ).toPlain();
+        dispatch(setStudent(student));
+      }
     },
+    validateName = (name: string) => name.length > 0 || "To pole nie może być puste",
     validateList = (list: Array<PeriodPlane>) => {
       if (list.length <= 0) {
         return "Należy dodać przynajmniej jeden okres";
@@ -60,9 +62,9 @@ function StudentScreen() {
     };
 
   useEffect(() => window.scrollTo(0, 0), []);
-
+  console.log("StudentScreen Render");
   return (
-    <form className={styles.formWrapper} onSubmit={handleSubmit()}>
+    <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
       <label className={styles.row}>
         <span>Imię i nazwisko ucznia</span>
         <input
@@ -70,10 +72,7 @@ function StudentScreen() {
           onChange={(e) => send(action("studentNameChange", e.target.value))}
         />
       </label>
-      <Error
-        variable={state.studentName}
-        check={(value) => value.length > 0 || "To pole nie może być puste"}
-      />
+      <FormError variable={state.studentName} check={validateName} />
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select
@@ -92,6 +91,7 @@ function StudentScreen() {
           onSelect={useCallback((index) => send(action("periodListSelect", index)), [])}
         />
       </label>
+      <FormError variable={state.periodList} check={validateList} />
       <div className={styles.row}>
         <DCButton onClick={() => send(action("removeClick", null))}>Usuń</DCButton>
         <DCButton onClick={() => send(action("saveClick", null))}>Zapisz</DCButton>

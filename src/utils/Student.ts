@@ -35,7 +35,9 @@ export default class Student implements StudentPlane {
     let result = this.lesson.end <= this.periods[this.index].end;
     if (!result) {
       result = ++this.index < this.periods.length;
-      if (!result) this.index = 0;
+      if (!result) {
+        this.index = 0;
+      }
       this.lesson.begin = this.periods[this.index].begin;
     }
     return result;

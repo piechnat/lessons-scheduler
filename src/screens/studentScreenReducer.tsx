@@ -34,34 +34,30 @@ const getPeriod = (state: State): PeriodPlane => ({
 });
 
 export default function studentScreenReducer(state: State, action: Action): State {
-  if (action.payload !== null) {
-    switch (action.type) {
-      case "studentNameChange":
-        return { ...state, studentName: action.payload };
-      case "lessonLengthChange":
-        return { ...state, lessonLength: action.payload };
-      case "periodListSelect": {
-        const { begin, length } = state.periodList[action.payload];
-        return {
-          ...state,
-          periodIndex: action.payload,
-          periodBegin: new SDate(begin),
-          periodEnd: new SDate(begin + length),
-        };
-      }
-      case "periodDayChange":
-        return {
-          ...state,
-          periodBegin: state.periodBegin.clone().setDay(action.payload),
-          periodEnd: state.periodEnd.clone().setDay(action.payload),
-        };
-      case "periodBeginChange":
-        return { ...state, periodBegin: new SDate(action.payload) };
-      case "periodEndChange":
-        return { ...state, periodEnd: new SDate(action.payload) };
-    }
-  }
   switch (action.type) {
+    case "studentNameChange":
+      return { ...state, studentName: action.payload };
+    case "lessonLengthChange":
+      return { ...state, lessonLength: action.payload };
+    case "periodListSelect": {
+      const { begin, length } = state.periodList[action.payload];
+      return {
+        ...state,
+        periodIndex: action.payload,
+        periodBegin: new SDate(begin),
+        periodEnd: new SDate(begin + length),
+      };
+    }
+    case "periodDayChange":
+      return {
+        ...state,
+        periodBegin: state.periodBegin.clone().setDay(action.payload),
+        periodEnd: state.periodEnd.clone().setDay(action.payload),
+      };
+    case "periodBeginChange":
+      return { ...state, periodBegin: new SDate(action.payload) };
+    case "periodEndChange":
+      return { ...state, periodEnd: new SDate(action.payload) };
     case "removeClick":
       return {
         ...state,

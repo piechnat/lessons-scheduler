@@ -11,7 +11,6 @@ type GridProps = {
 };
 
 function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...rest }: GridProps) {
-  console.log("GridList Render");
   const schedulerScreen = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (listenOutside) {
@@ -19,7 +18,7 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
       const clickOutsideHandler = (e: any) => {
         const elm = schedulerScreen.current;
         if (root && root.contains(e.target) && elm && !elm.contains(e.target)) {
-          onSelect(-1);
+          setTimeout(() => onSelect(-1), 100);
         }
       };
       document.addEventListener("click", clickOutsideHandler);

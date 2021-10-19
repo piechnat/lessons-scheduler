@@ -9,7 +9,10 @@ function confirmDialog(
   return new Promise((resolve) => {
     const container = document.createElement("div"),
       ANIM_TIME = 200,
-      onPopstate = () => ((resolve(false), close())),
+      onPopstate = () => {
+        resolve(false);
+        close();
+      },
       close = () =>
         setTimeout(() => {
           ReactDOM.unmountComponentAtNode(container);
@@ -21,7 +24,11 @@ function confirmDialog(
 
     function ConfirmDialog() {
       const [opacity, setOpacity] = useState(0),
-        resolveResult = (result: boolean) => ((setOpacity(0), resolve(result), close()));
+        resolveResult = (result: boolean) => {
+          setOpacity(0);
+          resolve(result);
+          close();
+        };
       useEffect(() => {
         setTimeout(() => setOpacity(1), 50);
       }, []);
@@ -30,7 +37,8 @@ function confirmDialog(
           className={styles.confirmDialogWrapper}
           style={{ opacity: opacity, transition: "opacity " + ANIM_TIME + "ms ease-in" }}
         >
-          <div className={styles.confirmDialog}>{message}
+          <div className={styles.confirmDialog}>
+            {message}
             <div className={styles.btnWrapper}>
               {buttons[1] && <button onClick={() => resolveResult(false)}>{buttons[1]}</button>}
               {buttons[0] && <button onClick={() => resolveResult(true)}>{buttons[0]}</button>}
@@ -49,7 +57,10 @@ function selectDialog(optionsList: Array<string>, defIndex: number = -1): Promis
   return new Promise((resolve) => {
     const container = document.createElement("div"),
       ANIM_TIME = 200,
-      cancel = () => ((resolve(defIndex), close())),
+      cancel = () => {
+        resolve(defIndex);
+        close();
+      },
       close = (delay: number = 0) =>
         setTimeout(() => {
           ReactDOM.unmountComponentAtNode(container);
@@ -74,7 +85,9 @@ function selectDialog(optionsList: Array<string>, defIndex: number = -1): Promis
       return (
         <div
           className={styles.selectDialogWrapper}
-          onClick={(e) => selDlg && !selDlg.contains(e.target as Element) && cancel()}
+          onClick={(e) => {
+            if (selDlg && !selDlg.contains(e.target as Element)) cancel();
+          }}
           style={{ opacity: opacity, transition: "opacity " + ANIM_TIME + "ms ease-in" }}
         >
           <div ref={(e) => (selDlg = e)} className={styles.selectDialog}>
@@ -83,7 +96,11 @@ function selectDialog(optionsList: Array<string>, defIndex: number = -1): Promis
                 <li
                   key={index}
                   className={index === defIndex ? styles.selected : ""}
-                  onClick={() => ((setOpacity(0), resolve(index), close(ANIM_TIME)))}
+                  onClick={() => {
+                    setOpacity(0);
+                    resolve(index);
+                    close(ANIM_TIME);
+                  }}
                 >
                   {item}
                 </li>
@@ -120,7 +137,9 @@ function toastNotification(
     let locked = false;
 
     function close(result?: boolean) {
-      if (locked) return;
+      if (locked) {
+        return;
+      }
       locked = true;
       container.removeAttribute("count");
       container.style.bottom = -container.offsetHeight + "px";

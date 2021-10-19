@@ -62,7 +62,7 @@ function StudentScreen() {
     };
 
   useEffect(() => window.scrollTo(0, 0), []);
-  console.log("StudentScreen Render");
+  
   return (
     <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
       <label className={styles.row}>

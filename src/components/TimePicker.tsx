@@ -18,7 +18,6 @@ const minutesList = range(0, Math.floor(SDate.HOUR) - 1).map((value) => {
 });
 
 function TimePicker({ time, onChange, min = 0, max = 23 }: TimePickerProps) {
-  console.log("TimePicker Render");
   const date = new SDate(time),
     handleHoursChange = (e: ChangeEvent<HTMLSelectElement>) =>
       onChange(date.setHours(parseInt(e.target.value)).getTime()),

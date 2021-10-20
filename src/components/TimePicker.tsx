@@ -1,39 +1,44 @@
-import { range, SDate } from "../utils";
+import { ChangeEvent, memo } from "react";
+import SDate from "../utils/SDate";
+import { range } from "../utils";
 
 type TimePickerProps = {
-  date: SDate;
-  onChange: (date: SDate) => void;
-  hourRange?: [number, number];
+  minHour?: number;
+  maxHour?: number;
+  time: number;
+  onChange: (time: number) => void;
 };
 
-function TimePicker({ date, onChange, hourRange: [min, max] = [0, 23] }: TimePickerProps) {
+const minutesList = range(0, Math.floor(SDate.HOUR) - 1).map((value) => {
+  value *= SDate.UNIT;
+  return (
+    <option key={value} value={value}>
+      {value.toString().padStart(2, "0")}
+    </option>
+  );
+});
+
+function TimePicker({ time, onChange, minHour = 0, maxHour = 23 }: TimePickerProps) {
+  const date = new SDate(time),
+    handleHoursChange = (e: ChangeEvent<HTMLSelectElement>) =>
+      onChange(date.setHours(parseInt(e.target.value)).getTime()),
+    handleMinutesChange = (e: ChangeEvent<HTMLSelectElement>) =>
+      onChange(date.setMinutes(parseInt(e.target.value)).getTime());
   return (
     <>
-      <select
-        value={date.getHours()}
-        onChange={(e) => onChange(date.setHours(parseInt(e.target.value)))}
-      >
-        {range(min, max).map((value) => (
+      <select value={date.getHours()} onChange={handleHoursChange}>
+        {range(minHour, maxHour).map((value) => (
           <option key={value} value={value}>
             {value.toString().padStart(2, "0")}
           </option>
         ))}
-      </select>:
-      <select
-        value={date.getMinutes()}
-        onChange={(e) => onChange(date.setMinutes(parseInt(e.target.value)))}
-      >
-        {range(0, Math.floor(SDate.HOUR) - 1).map((value) => {
-          value *= SDate.UNIT;
-          return (
-            <option key={value} value={value}>
-              {value.toString().padStart(2, "0")}
-            </option>
-          );
-        })}
+      </select>
+      :
+      <select value={date.getMinutes()} onChange={handleMinutesChange}>
+        {minutesList}
       </select>
     </>
   );
 }
 
-export default TimePicker;
+export default memo(TimePicker);

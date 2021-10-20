@@ -5,6 +5,7 @@ import { showStudentScreen, removeStudent } from "./appSlice";
 import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
+import { confirmDialog } from "../utils/dialogs";
 
 function SchedulerScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
@@ -24,7 +25,7 @@ function SchedulerScreen() {
         listenOutside={true}
       />
       <div className={styles.flexPanel}>
-        <DCButton>Szukaj</DCButton>
+        <DCButton onClick={() => confirmDialog("Test")}>Szukaj</DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj
         </DCButton>

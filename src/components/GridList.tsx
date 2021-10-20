@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import styles from "./GridList.module.scss";
 
 type GridProps = {
@@ -15,14 +15,18 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
   useEffect(() => {
     if (listenOutside) {
       const root = document.getElementById("root");
+      let timeout: NodeJS.Timeout;
       const clickOutsideHandler = (e: any) => {
         const elm = schedulerScreen.current;
         if (root && root.contains(e.target) && elm && !elm.contains(e.target)) {
-          onSelect(-1);
+          timeout = setTimeout(() => onSelect(-1), 200);
         }
       };
       document.addEventListener("click", clickOutsideHandler);
-      return () => document.removeEventListener("click", clickOutsideHandler);
+      return () => {
+        clearTimeout(timeout);
+        document.removeEventListener("click", clickOutsideHandler);
+      }
     }
   }, [onSelect, listenOutside]);
   return (
@@ -42,4 +46,4 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
   );
 }
 
-export default GridList;
+export default memo(GridList);

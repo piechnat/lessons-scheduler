@@ -5,8 +5,10 @@ export type SchedulerPlane = Array<StudentPlane>;
 
 export default class Scheduler {
   students: Array<Student> = [];
-  constructor(dataInput: SchedulerPlane | string | undefined) {
-    if (dataInput) this.assign(dataInput);
+  constructor(dataInput?: SchedulerPlane | string | null) {
+    if (dataInput) {
+      this.assign(dataInput);
+    }
   }
   assign(dataInput: SchedulerPlane | string) {
     this.students = (typeof dataInput === "string" ? JSON.parse(dataInput) : dataInput).map(

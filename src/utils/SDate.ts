@@ -1,6 +1,4 @@
-import { PeriodPlane } from "./Period";
-
-export class SDate {
+export default class SDate {
   private time = 0;
   private day = 0;
   private hours = 0;
@@ -78,12 +76,4 @@ export class SDate {
   clone(): SDate {
     return Object.assign(new SDate(), this);
   }
-}
-
-export function periodToStr(period: PeriodPlane): string {
-  return new SDate(period.begin) + "-" + new SDate(period.begin + period.length).toTime();
-}
-
-export function range(from: number, to: number): Array<number> {
-  return Array.from({ length: to - (from - 1) }, (value, index) => index + from);
 }

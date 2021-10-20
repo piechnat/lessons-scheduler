@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from "react";
 
 type FormErrorProps<T> = {
-  variable: T;
-  check: (variable: T) => boolean | string;
+  value: T;
+  check: (value: T) => boolean | string;
 };
 
 function useFormError(templateCallback: (message: string) => JSX.Element) {
@@ -12,13 +12,13 @@ function useFormError(templateCallback: (message: string) => JSX.Element) {
     renderError: templateCallback,
     update: useState(0)[1],
   });
-  function FormError<T>({ variable, check }: FormErrorProps<T>): JSX.Element {
+  function FormError<T>({ value, check }: FormErrorProps<T>): JSX.Element {
     const form = formState.current,
-      result = check(variable),
+      result = check(value),
       notValid = typeof result === "string";
     let componentIndex = useRef(form.errors.length).current; 
     if (process.env.NODE_ENV === "development" && console.log.name === "disabledLog") {
-      // detect second fake render in StrictMode
+      // if detected second fake render in StrictMode
       componentIndex--;
     }
     form.errors[componentIndex] = notValid;

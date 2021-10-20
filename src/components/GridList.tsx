@@ -15,14 +15,18 @@ function GridList({ className, rows, selectedRow, onSelect, listenOutside, ...re
   useEffect(() => {
     if (listenOutside) {
       const root = document.getElementById("root");
+      let timeout: NodeJS.Timeout;
       const clickOutsideHandler = (e: any) => {
         const elm = schedulerScreen.current;
         if (root && root.contains(e.target) && elm && !elm.contains(e.target)) {
-          setTimeout(() => onSelect(-1), 100);
+          timeout = setTimeout(() => onSelect(-1), 200);
         }
       };
       document.addEventListener("click", clickOutsideHandler);
-      return () => document.removeEventListener("click", clickOutsideHandler);
+      return () => {
+        clearTimeout(timeout);
+        document.removeEventListener("click", clickOutsideHandler);
+      }
     }
   }, [onSelect, listenOutside]);
   return (

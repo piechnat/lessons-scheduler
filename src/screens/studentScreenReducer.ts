@@ -1,4 +1,4 @@
-import { SDate } from "../utils";
+import SDate from "../utils/SDate";
 import { PeriodPlane } from "../utils/Period";
 
 type State = {

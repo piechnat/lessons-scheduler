@@ -1,9 +1,10 @@
 import { ChangeEvent, memo } from "react";
-import { range, SDate } from "../utils";
+import SDate from "../utils/SDate";
+import { range } from "../utils";
 
 type TimePickerProps = {
-  min?: number;
-  max?: number;
+  minHour?: number;
+  maxHour?: number;
   time: number;
   onChange: (time: number) => void;
 };
@@ -17,7 +18,7 @@ const minutesList = range(0, Math.floor(SDate.HOUR) - 1).map((value) => {
   );
 });
 
-function TimePicker({ time, onChange, min = 0, max = 23 }: TimePickerProps) {
+function TimePicker({ time, onChange, minHour = 0, maxHour = 23 }: TimePickerProps) {
   const date = new SDate(time),
     handleHoursChange = (e: ChangeEvent<HTMLSelectElement>) =>
       onChange(date.setHours(parseInt(e.target.value)).getTime()),
@@ -26,7 +27,7 @@ function TimePicker({ time, onChange, min = 0, max = 23 }: TimePickerProps) {
   return (
     <>
       <select value={date.getHours()} onChange={handleHoursChange}>
-        {range(min, max).map((value) => (
+        {range(minHour, maxHour).map((value) => (
           <option key={value} value={value}>
             {value.toString().padStart(2, "0")}
           </option>

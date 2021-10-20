@@ -4,23 +4,14 @@ import useFormError from "../components/FormError";
 import GridList from "../components/GridList";
 import TimePicker from "../components/TimePicker";
 import { useAppDispatch, useAppSelector } from "../redux";
-import { periodToStr, range, SDate } from "../utils";
+import SDate from "../utils/SDate";
+import { periodToStr } from "../utils";
+import { LessonLengthOptions, DayNameOptions } from "../components";
 import Period, { PeriodPlane } from "../utils/Period";
 import Student from "../utils/Student";
 import { setStudent, showSchedulerScreen } from "./appSlice";
 import studentScreenReducer, { createAction as action } from "./studentScreenReducer";
 import styles from "./styles.module.scss";
-
-const dayNameList = SDate.DAY_NAMES.map((name, index) => (
-    <option key={index} value={index}>
-      {name}
-    </option>
-  )),
-  lessonLengthList = range(1, 45 / SDate.UNIT).map((value) => (
-    <option key={value} value={value}>
-      {value * SDate.UNIT} minut
-    </option>
-  ));
 
 function StudentScreen() {
   const dispatch = useAppDispatch(),
@@ -62,7 +53,7 @@ function StudentScreen() {
     };
 
   useEffect(() => window.scrollTo(0, 0), []);
-  
+
   return (
     <form className={styles.formWrapper} onSubmit={handleSubmit(onSubmit)}>
       <label className={styles.row}>
@@ -72,14 +63,14 @@ function StudentScreen() {
           onChange={(e) => send(action("studentNameChange", e.target.value))}
         />
       </label>
-      <FormError variable={state.studentName} check={validateName} />
+      <FormError value={state.studentName} check={validateName} />
       <label className={styles.row}>
         <span>Długość lekcji</span>
         <select
           value={state.lessonLength}
           onChange={(e) => send(action("lessonLengthChange", parseInt(e.target.value)))}
         >
-          {lessonLengthList}
+          <LessonLengthOptions />
         </select>
       </label>
       <label className={styles.row}>
@@ -91,7 +82,7 @@ function StudentScreen() {
           onSelect={useCallback((index) => send(action("periodListSelect", index)), [])}
         />
       </label>
-      <FormError variable={state.periodList} check={validateList} />
+      <FormError value={state.periodList} check={validateList} />
       <div className={styles.row}>
         <DCButton onClick={() => send(action("removeClick", null))}>Usuń</DCButton>
         <DCButton onClick={() => send(action("saveClick", null))}>Zapisz</DCButton>
@@ -104,14 +95,14 @@ function StudentScreen() {
             value={state.periodBegin.getDay()}
             onChange={(e) => send(action("periodDayChange", parseInt(e.target.value)))}
           >
-            {dayNameList}
+            <DayNameOptions />
           </select>
         </label>
         <label className={styles.row}>
           <span>Rozpoczęcie</span>
           <TimePicker
-            min={13}
-            max={21}
+            minHour={13}
+            maxHour={21}
             time={state.periodBegin.getTime()}
             onChange={useCallback((time) => send(action("periodBeginChange", time)), [])}
           />
@@ -119,8 +110,8 @@ function StudentScreen() {
         <label className={styles.row}>
           <span>Zakończenie</span>
           <TimePicker
-            min={13}
-            max={21}
+            minHour={13}
+            maxHour={21}
             time={state.periodEnd.getTime()}
             onChange={useCallback((time) => send(action("periodEndChange", time)), [])}
           />

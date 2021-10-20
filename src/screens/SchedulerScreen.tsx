@@ -7,6 +7,17 @@ import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
 import { confirmDialog } from "../utils/dialogs";
 
+import Worker from '../worker';
+const instance = new Worker();
+const onClick = () => {
+  const data = 'Some data';
+  return new Promise<string>(async resolve => {
+    // Use a web worker to process the data
+    const processed = await instance.processData(data);
+    resolve(processed);
+  });
+};
+
 function SchedulerScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
   const dispatch = useAppDispatch();
@@ -25,7 +36,7 @@ function SchedulerScreen() {
         listenOutside={true}
       />
       <div className={styles.flexPanel}>
-        <DCButton onClick={() => confirmDialog("Test")}>Szukaj</DCButton>
+        <DCButton onClick={() => onClick().then((value) => confirmDialog(value))}>Szukaj</DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj
         </DCButton>

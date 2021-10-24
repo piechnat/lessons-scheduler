@@ -8,7 +8,7 @@ export type StudentPlane = {
 };
 
 export default class Student implements StudentPlane {
-  private index: number = 0;
+  private _index: number = 0;
   id: number;
   name: string;
   lesson: Period;
@@ -32,13 +32,13 @@ export default class Student implements StudentPlane {
   }
   nextCombination(): boolean {
     ++this.lesson.begin;
-    let result = this.lesson.end <= this.periods[this.index].end;
+    let result = this.lesson.end <= this.periods[this._index].end;
     if (!result) {
-      result = ++this.index < this.periods.length;
+      result = ++this._index < this.periods.length;
       if (!result) {
-        this.index = 0;
+        this._index = 0;
       }
-      this.lesson.begin = this.periods[this.index].begin;
+      this.lesson.begin = this.periods[this._index].begin;
     }
     return result;
   }
@@ -55,15 +55,15 @@ export default class Student implements StudentPlane {
   get position(): number {
     let pos = 0,
       i = 0;
-    while (i < this.index) {
+    while (i < this._index) {
       pos += this.periods[i].length - this.lesson.length + 1;
       ++i;
     }
-    return pos + (this.lesson.begin - this.periods[this.index].begin);
+    return pos + (this.lesson.begin - this.periods[this._index].begin);
   }
   set position(pos: number) {
-    this.index = 0;
-    this.lesson.begin = this.periods[this.index].begin;
+    this._index = 0;
+    this.lesson.begin = this.periods[this._index].begin;
     while (pos > 0) {
       this.nextCombination();
       --pos;

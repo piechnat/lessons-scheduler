@@ -4,11 +4,29 @@ import Student, { StudentPlane } from "./Student";
 export type SchedulerPlane = Array<StudentPlane>;
 
 export default class Scheduler {
-  students: Array<Student> = [];
+  private cachedPosition: number = 0;
+  private students: Array<Student> = [];
   constructor(dataInput?: SchedulerPlane | string | null) {
     if (dataInput) {
       this.assign(dataInput);
     }
+  }
+  private getPosition(): number {
+    const len = this.students.length;
+    let tmp = 1,
+      multipliers: Array<number> = [],
+      i = 0;
+    multipliers.push(tmp);
+    while (i < len) {
+      multipliers.push((tmp *= this.students[i].combinationsCount));
+      ++i;
+    }
+    tmp = i = 0;
+    while (i < len) {
+      tmp += this.students[i].position * multipliers[i];
+      ++i;
+    }
+    return tmp;
   }
   assign(dataInput: SchedulerPlane | string) {
     this.students = (typeof dataInput === "string" ? JSON.parse(dataInput) : dataInput).map(
@@ -20,6 +38,7 @@ export default class Scheduler {
           student.periods.map((period: PeriodPlane) => new Period(period.begin, period.length))
         )
     );
+    this.cachedPosition = this.getPosition();
   }
   toString(): string {
     return JSON.stringify(this.students);
@@ -28,12 +47,14 @@ export default class Scheduler {
     return this.students.map((student) => student.toPlain());
   }
   nextCombination(): boolean {
+    this.cachedPosition++;
     const len = this.students.length;
     let i = 0;
     while (i < len) {
       if (this.students[i].nextCombination()) return true;
       ++i;
     }
+    this.cachedPosition = 0;
     return false;
   }
   get combinationsCount(): number {
@@ -61,23 +82,10 @@ export default class Scheduler {
     return true;
   }
   get position(): number {
-    const len = this.students.length;
-    let tmp = 1,
-      multipliers: Array<number> = [],
-      i = 0;
-    multipliers.push(tmp);
-    while (i < len) {
-      multipliers.push((tmp *= this.students[i].combinationsCount));
-      ++i;
-    }
-    tmp = i = 0;
-    while (i < len) {
-      tmp += this.students[i].position * multipliers[i];
-      ++i;
-    }
-    return tmp;
+    return this.cachedPosition;
   }
   set position(pos: number) {
+    this.cachedPosition = pos;
     const len = this.students.length;
     let tmp = 1,
       multipliers: Array<number> = [],

@@ -1,9 +1,17 @@
-declare module 'comlink-loader!*' {
+declare module "comlink-loader!*" {
+  type SchedulerWorkerStatus = import(".").SchedulerWorkerStatus;
+  type SchedulerPlane = import("../utils/Scheduler").SchedulerPlane;
   class WebpackWorker extends Worker {
     constructor();
-    // Add any custom functions to this class.
-    // Make note that the return type needs to be wrapped in a promise.
-    processData(data: string): Promise<string>;
+    setup(
+      schedulerInput: string | SchedulerPlane,
+      begin: number = 0,
+      position?: number,
+      end?: number,
+      active: boolean = false
+    );
+    setActive(active: boolean): Promise<SchedulerWorkerStatus>;
+    getStatus(): Promise<SchedulerWorkerStatus>;
   }
   export = WebpackWorker;
 }

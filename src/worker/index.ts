@@ -7,7 +7,7 @@ export type SchedulerWorkerStatus = {
   begin: number;
   end: number;
   position: number;
-  validCombinations: Array<number>;
+  found: number;
 }
 
 export function completed(status: SchedulerWorkerStatus): number {

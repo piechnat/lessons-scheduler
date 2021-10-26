@@ -85,23 +85,25 @@ export default class Scheduler {
     return this.cachedPosition;
   }
   set position(pos: number) {
-    this.cachedPosition = pos;
-    const len = this.students.length;
-    let tmp = 1,
-      multipliers: Array<number> = [],
-      i = 0,
-      howMany = 0;
-    multipliers.push(tmp);
-    while (i < len) {
-      multipliers.push((tmp *= this.students[i].combinationsCount));
-      ++i;
-    }
-    i = len - 1;
-    while (i >= 0) {
-      howMany = Math.floor(pos / multipliers[i]);
-      this.students[i].position = howMany;
-      pos -= howMany * multipliers[i];
-      --i;
+    if (pos !== this.cachedPosition) {
+      this.cachedPosition = pos;
+      const len = this.students.length;
+      let tmp = 1,
+        multipliers: Array<number> = [],
+        i = 0,
+        howMany = 0;
+      multipliers.push(tmp);
+      while (i < len) {
+        multipliers.push((tmp *= this.students[i].combinationsCount));
+        ++i;
+      }
+      i = len - 1;
+      while (i >= 0) {
+        howMany = Math.floor(pos / multipliers[i]);
+        this.students[i].position = howMany;
+        pos -= howMany * multipliers[i];
+        --i;
+      }
     }
   }
 }

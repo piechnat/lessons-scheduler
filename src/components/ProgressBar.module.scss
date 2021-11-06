@@ -1,0 +1,17 @@
+.wrapper {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.664);
+  background-color: rgba(255, 255, 255, 0.726);
+  height: 1rem;
+  margin: 0.5em 0;
+  .indicator {
+    background-color: rgba(87, 87, 212, 0.5);
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    transition: width 0.5s;
+  }
+}
+

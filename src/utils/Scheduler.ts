@@ -3,6 +3,10 @@ import Student, { StudentPlane } from "./Student";
 
 export type SchedulerPlane = Array<StudentPlane>;
 
+export function compareByLessonBegin(a: StudentPlane, b: StudentPlane) {
+  return a.lesson.begin - b.lesson.begin;
+}
+
 export default class Scheduler {
   private cachedPosition: number = 0;
   private students: Array<Student> = [];

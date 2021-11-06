@@ -1,5 +1,6 @@
 import { SchedulerWorkerStatus } from ".";
 import Scheduler, { SchedulerPlane } from "../utils/Scheduler";
+import CombinationList, { Combinations } from "./Combinations";
 
 const CHUNK_LENGTH = 20000000,
   scheduler = new Scheduler(),
@@ -11,7 +12,7 @@ const CHUNK_LENGTH = 20000000,
     position: 0,
     found: 0,
   },
-  validCombinations = [] as Array<number>;
+  combinationList = new CombinationList();
 
 function loop(): void {
   if (status.active) {
@@ -22,7 +23,7 @@ function loop(): void {
           break;
         }
         if (scheduler.checkValidity()) {
-          validCombinations.push(scheduler.position);
+          combinationList.addFromScheduler(scheduler);
         }
         if (!scheduler.nextCombination()) {
           status.done = true;
@@ -30,7 +31,7 @@ function loop(): void {
         }
       }
       status.position = scheduler.position;
-      status.found = validCombinations.length;
+      status.found = combinationList.length;
       if (status.done) {
         status.active = false;
       } else {
@@ -40,9 +41,9 @@ function loop(): void {
   }
 }
 
-export function readValidCombinations(): Array<number> {
+export function readValidCombinations(): Combinations {
   status.found = 0;
-  return validCombinations.splice(0, validCombinations.length);
+  return combinationList.getItems(true);
 }
 
 export function setup(

@@ -1,6 +1,7 @@
 declare module "comlink-loader!*" {
   type SchedulerWorkerStatus = import(".").SchedulerWorkerStatus;
   type SchedulerPlane = import("../utils/Scheduler").SchedulerPlane;
+  type Combinations = import("./Combinations").CombinationList;
   class WebpackWorker extends Worker {
     constructor();
     setup(
@@ -12,6 +13,7 @@ declare module "comlink-loader!*" {
     );
     setActive(active: boolean): Promise<SchedulerWorkerStatus>;
     getStatus(): Promise<SchedulerWorkerStatus>;
+    readValidCombinations(): Promise<Combinations>;
   }
   export = WebpackWorker;
 }

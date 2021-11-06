@@ -3,7 +3,7 @@ import styles from "./GridList.module.scss";
 
 type GridProps = {
   className?: string;
-  rows: Array<Array<string>>;
+  rows: Array<Array<string|number>>;
   selectedRow: number;
   onSelect: (index: number) => void;
   listenOutside?: boolean;

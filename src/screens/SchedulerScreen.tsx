@@ -5,9 +5,9 @@ import { showStudentScreen, removeStudent } from "./appSlice";
 import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
-import SchedulerWorker, { completed } from "../worker";
-
-const schedulerWorker = new SchedulerWorker();
+import { compareByLessonBegin } from "../utils/Scheduler";
+import ProgressBar from "../components/ProgressBar";
+import { searchController } from "../worker/searchController";
 
 function SchedulerScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
@@ -16,7 +16,10 @@ function SchedulerScreen() {
     useAppSelector((state) => state.app.selectedStudentId)
   );
   const studentList = [...useAppSelector((state) => state.app.students)];
-  studentList.sort((a, b) => a.lesson.begin - b.lesson.begin);
+  studentList.sort(compareByLessonBegin);
+  const [searchProgress, selectdCombination, combinations] = useAppSelector((state) => [
+    state.app.searchProgress, state.app.selectdCombination, state.app.combinations
+  ]);
   return (
     <div className={styles.formWrapper}>
       <GridList
@@ -26,8 +29,9 @@ function SchedulerScreen() {
         rows={studentList.map((student) => [student.name, periodToStr(student.lesson)])}
         listenOutside={true}
       />
+      <ProgressBar progress={searchProgress} />
       <div className={styles.flexPanel}>
-        <DCButton>Szukaj</DCButton>
+        <DCButton onClick={() => searchController.start()}>Szukaj</DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj
         </DCButton>
@@ -36,25 +40,9 @@ function SchedulerScreen() {
         </DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen())}>Dodaj</DCButton>
       </div>
-      <button onClick={onClickStart}>Start</button>
-      <button onClick={onClickStop}>Stop</button>
-      <button onClick={onClickTest}>Test</button>
+      <GridList rows={combinations} selectedRow={selectdCombination} onSelect={(index) => index} />
     </div>
   );
 }
-
-const onClickStart = async () => {
-
-};
-
-const onClickStop = async () => {
-  console.log('Stop');
-  await schedulerWorker.setActive(false);
-};
-
-const onClickTest = async () => {
-  const status = await schedulerWorker.getStatus();
-  console.log(completed(status), status);
-};
 
 export default SchedulerScreen;

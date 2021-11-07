@@ -5,9 +5,9 @@ import { showStudentScreen, removeStudent } from "./appSlice";
 import styles from "./styles.module.scss";
 import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
-import { compareByLessonBegin } from "../utils/Scheduler";
+import { compareByLessonBegin } from "../models/Scheduler";
 import ProgressBar from "../components/ProgressBar";
-import { searchController } from "../worker/searchController";
+import { SearchController } from "../worker/SearchController";
 
 function SchedulerScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
@@ -18,8 +18,22 @@ function SchedulerScreen() {
   const studentList = [...useAppSelector((state) => state.app.students)];
   studentList.sort(compareByLessonBegin);
   const [searchProgress, selectdCombination, combinations] = useAppSelector((state) => [
-    state.app.searchProgress, state.app.selectdCombination, state.app.combinations
+    state.app.searchProgress,
+    state.app.selectdCombination,
+    state.app.combinations,
   ]);
+  function onSearchClick() {
+    if (SearchController.isActive()) {
+      SearchController.stop();
+    } else {
+      SearchController.start();
+    }
+  }
+  const searchClickCaption = SearchController.isStarted()
+    ? SearchController.isActive()
+      ? "Zatrzymaj"
+      : "Wznów"
+    : "Szukaj";
   return (
     <div className={styles.formWrapper}>
       <GridList
@@ -31,7 +45,7 @@ function SchedulerScreen() {
       />
       <ProgressBar progress={searchProgress} />
       <div className={styles.flexPanel}>
-        <DCButton onClick={() => searchController.start()}>Szukaj</DCButton>
+        <DCButton onClick={onSearchClick}>{searchClickCaption}</DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj
         </DCButton>

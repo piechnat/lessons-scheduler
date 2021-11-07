@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { StudentPlane } from "../utils/Student";
-import { SchedulerPlane } from "../utils/Scheduler";
-import mainScheduler from "../utils/mainScheduler";
-import { Combinations } from "../worker/Combinations";
+import { StudentPlane } from "../models/Student";
+import { SchedulerPlane } from "../models/Scheduler";
+import { DataLoader } from "../utils/DataLoader";
+import { Combinations } from "../models/CombinationList";
 
 interface AppState {
   activeScreen: "SCHEDULER" | "STUDENT_ADD" | "STUDENT_EDIT";
@@ -16,7 +16,7 @@ interface AppState {
 const initialState: AppState = {
   activeScreen: "SCHEDULER",
   selectedStudentId: -1,
-  students: mainScheduler.toPlain(),
+  students: DataLoader.students,
   searchProgress: 0,
   selectdCombination: -1,
   combinations: [],

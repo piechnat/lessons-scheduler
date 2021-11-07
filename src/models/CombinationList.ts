@@ -1,4 +1,4 @@
-import Scheduler, { compareByLessonBegin } from "../utils/Scheduler";
+import Scheduler, { compareByLessonBegin } from "./Scheduler";
 
 export type Combinations = Array<[number, string]>;
 

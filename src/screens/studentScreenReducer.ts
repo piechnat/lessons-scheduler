@@ -1,5 +1,5 @@
-import SDate from "../utils/SDate";
-import { PeriodPlane } from "../utils/Period";
+import SDate from "../models/SDate";
+import { PeriodPlane } from "../models/Period";
 
 type State = {
   studentName: string;

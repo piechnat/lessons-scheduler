@@ -1,7 +1,7 @@
 // eslint-disable-next-line
-import SchedulerWorker from "comlink-loader!./worker"; // inline loader
+import SearchWorker from "comlink-loader!./SearchWorker"; // inline loader
 
-export type SchedulerWorkerStatus = {
+export type SearchWorkerStatus = {
   active: boolean;
   done: boolean;
   begin: number;
@@ -10,10 +10,4 @@ export type SchedulerWorkerStatus = {
   found: number;
 }
 
-export function completed(status: SchedulerWorkerStatus): number {
-  const len = status.end - status.begin;
-  const pos = status.position - status.begin;
-  return pos / len;
-}
-
-export default SchedulerWorker;
+export default SearchWorker;

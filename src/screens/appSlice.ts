@@ -1,13 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { StudentPlane } from "../models/Student";
-import { SchedulerPlane } from "../models/Scheduler";
+import Scheduler, { SchedulerPlane } from "../models/Scheduler";
 import { DataLoader } from "../utils/DataLoader";
+import searchCommandReducer from "./searchCommandReducer";
 import { Combinations } from "../models/CombinationList";
 
-interface AppState {
+export type SearchState = "RESET" | "START" | "STOP";
+
+export interface AppState {
   activeScreen: "SCHEDULER" | "STUDENT_ADD" | "STUDENT_EDIT";
   selectedStudentId: number;
   students: SchedulerPlane;
+  searchState: SearchState;
   searchProgress: number;
   selectdCombination: number;
   combinations: Combinations;
@@ -17,6 +21,7 @@ const initialState: AppState = {
   activeScreen: "SCHEDULER",
   selectedStudentId: -1,
   students: DataLoader.students,
+  searchState: "RESET",
   searchProgress: 0,
   selectdCombination: -1,
   combinations: [],
@@ -68,11 +73,17 @@ const appSlice = createSlice({
       state.searchProgress = progress;
     },
     setSelectdCombination: (state, { payload: index }: PayloadAction<number>) => {
+      if (index !== state.selectdCombination && index > -1) {
+        const scheduler = new Scheduler(state.students);
+        scheduler.position = state.combinations[index][0];
+        state.students = scheduler.toPlain();
+      }
       state.selectdCombination = index;
     },
     setCombinations: (state, { payload: combinations }: PayloadAction<Combinations>) => {
       state.combinations = combinations;
     },
+    searchCommand: searchCommandReducer,
   },
 });
 
@@ -84,7 +95,8 @@ export const {
   removeStudent,
   setSearchProgress,
   setSelectdCombination,
-  setCombinations
+  setCombinations,
+  searchCommand,
 } = appSlice.actions;
 
 export default appSlice.reducer;

@@ -1,7 +1,8 @@
 // eslint-disable-next-line
-import SearchWorker from "comlink-loader!./SearchWorker"; // inline loader
+import SearchWorker from "comlink-loader!./worker"; // inline loader
 
 export type SearchWorkerStatus = {
+  id?: number;
   active: boolean;
   done: boolean;
   begin: number;

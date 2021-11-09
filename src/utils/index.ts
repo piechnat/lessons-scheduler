@@ -1,6 +1,6 @@
 import { PeriodPlane } from "../models/Period";
 import SDate from "../models/SDate";
-import { SearchWorkerStatus } from "../worker";
+import { SearchWorkerStatus } from "./SearchWorker";
 
 export function periodToStr(period: PeriodPlane): string {
   return new SDate(period.begin) + "-" + new SDate(period.begin + period.length).toTime();

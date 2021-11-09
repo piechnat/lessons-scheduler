@@ -1,7 +1,7 @@
 import { SearchWorkerStatus } from ".";
-import { debounce } from "../utils";
-import Scheduler, { SchedulerPlane } from "../models/Scheduler";
-import CombinationList, { Combinations } from "../models/CombinationList";
+import { debounce } from "..";
+import Scheduler, { SchedulerPlane } from "../../models/Scheduler";
+import CombinationList, { Combinations } from "../../models/CombinationList";
 
 const CHUNK_LENGTH = 20000000;
 const scheduler = new Scheduler();
@@ -15,7 +15,7 @@ const status: SearchWorkerStatus = {
   found: 0,
 };
 
-const loop = debounce(() => {
+const searchLoop = debounce(() => {
   if (status.active) {
     for (let i = 0; i < CHUNK_LENGTH; i++) {
       if (scheduler.position >= status.end) {
@@ -35,7 +35,7 @@ const loop = debounce(() => {
     if (status.done) {
       status.active = false;
     } else {
-      loop();
+      searchLoop();
     }
   }
 }, 0);
@@ -46,6 +46,7 @@ export function readValidCombinations(): Combinations {
 }
 
 export function setup(
+  id: number,
   schedulerInput: string | SchedulerPlane,
   active: boolean = false,
   begin: number = 0,
@@ -53,6 +54,7 @@ export function setup(
   position?: number,
 ): void {
   scheduler.assign(schedulerInput);
+  status.id = id;
   status.done = false;
   status.active = active;
   status.begin = Math.max(0, begin);
@@ -64,13 +66,13 @@ export function setup(
   );
   scheduler.position = status.position;
   readValidCombinations();
-  loop();
+  searchLoop();
 }
 
 export function setActive(active: boolean): SearchWorkerStatus {
   status.active = active;
   if (active) {
-    loop();
+    searchLoop();
   }
   return status;
 }

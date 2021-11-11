@@ -1,10 +1,10 @@
+import { store } from "../redux";
 import { PayloadAction } from "@reduxjs/toolkit";
+import SearchWorker from "../utils/SearchWorker";
 import CombinationList from "../models/CombinationList";
 import Scheduler from "../models/Scheduler";
-import { store } from "../redux";
+import { AppState, SearchState, searchCommand, setCombinations, setProgress } from "./appSlice";
 import { calculateProgress, debounce, range } from "../utils";
-import SearchWorker from "../utils/SearchWorker";
-import { AppState, searchCommand, SearchState, setCombinations, setSearchProgress } from "./appSlice";
 
 const THREAD_COUNT = 4;
 const workers: Array<SearchWorker> = [];
@@ -12,6 +12,7 @@ const combinationList = new CombinationList();
 
 const updateSearchProgress = debounce(async () => {
   if (store.getState().app.searchState === "START") {
+    const combinationsLength = combinationList.length;
     let progress = 0;
     let workingThreads = THREAD_COUNT;
     for (let i = 0; i < THREAD_COUNT; i++) {
@@ -22,12 +23,15 @@ const updateSearchProgress = debounce(async () => {
       }
       workingThreads -= status.done ? 1 : 0;
     }
+    if (combinationList.length > combinationsLength) {
+      combinationList.sort();
+    }
     store.dispatch(setCombinations(combinationList.getItems()));
     if (workingThreads <= 0) {
-      store.dispatch(setSearchProgress(1));
+      store.dispatch(setProgress(1));
       store.dispatch(searchCommand("STOP"));
     } else {
-      store.dispatch(setSearchProgress(progress / THREAD_COUNT));
+      store.dispatch(setProgress(progress / THREAD_COUNT));
       updateSearchProgress();
     }
   }
@@ -43,7 +47,7 @@ const searchCommandReducer = (
   if (command !== state.searchState) {
     switch (command) {
       case "RESET":
-        state.searchProgress = 0;
+        state.searchProgress = -1;
         state.combinations = [];
         workers.forEach((worker, index) =>
           worker.setActive(false).then(() => {
@@ -64,6 +68,7 @@ const searchCommandReducer = (
           });
         }
         workers.forEach((worker) => worker.setActive(true));
+        state.searchProgress = 0;
         updateSearchProgress();
         break;
       case "STOP":

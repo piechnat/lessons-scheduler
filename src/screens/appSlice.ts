@@ -13,7 +13,7 @@ export interface AppState {
   students: SchedulerPlane;
   searchState: SearchState;
   searchProgress: number;
-  selectdCombination: number;
+  selectdCombinationIndex: number;
   combinations: Combinations;
 }
 
@@ -22,8 +22,8 @@ const initialState: AppState = {
   selectedStudentId: -1,
   students: DataLoader.students,
   searchState: "RESET",
-  searchProgress: 0,
-  selectdCombination: -1,
+  searchProgress: -1,
+  selectdCombinationIndex: -1,
   combinations: [],
 };
 
@@ -69,16 +69,16 @@ const appSlice = createSlice({
         state.activeScreen = "SCHEDULER";
       }
     },
-    setSearchProgress: (state, { payload: progress }: PayloadAction<number>) => {
+    setProgress: (state, { payload: progress }: PayloadAction<number>) => {
       state.searchProgress = progress;
     },
-    setSelectdCombination: (state, { payload: index }: PayloadAction<number>) => {
-      if (index !== state.selectdCombination && index > -1) {
+    setCombinationIndex: (state, { payload: index }: PayloadAction<number>) => {
+      if (index !== state.selectdCombinationIndex && index > -1) {
         const scheduler = new Scheduler(state.students);
         scheduler.position = state.combinations[index][0];
         state.students = scheduler.toPlain();
       }
-      state.selectdCombination = index;
+      state.selectdCombinationIndex = index;
     },
     setCombinations: (state, { payload: combinations }: PayloadAction<Combinations>) => {
       state.combinations = combinations;
@@ -93,8 +93,8 @@ export const {
   setStudentId,
   setStudent,
   removeStudent,
-  setSearchProgress,
-  setSelectdCombination,
+  setProgress,
+  setCombinationIndex,
   setCombinations,
   searchCommand,
 } = appSlice.actions;

@@ -48,7 +48,7 @@ function SchedulerScreen() {
         onSelect={(index) => dispatch(setStudentId(students[index]?.id ?? -1))}
         listenOutside={true}
       />
-      <ProgressBar progress={searchProgress} />
+      <ProgressBar progress={searchProgress} working={searchState === "START"} />
       {combinations.length > 0 && (
         <div className={styles.flexPanel}>
           <DCButton onClick={() => dispatch(setCombinationIndex(combinationIndex - 1))}>

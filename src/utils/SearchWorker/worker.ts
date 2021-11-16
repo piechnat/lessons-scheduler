@@ -1,5 +1,5 @@
 import { SearchWorkerStatus } from ".";
-import { debounce } from "..";
+import { debounce, debugLog } from "..";
 import Scheduler, { SchedulerPlane } from "../../models/Scheduler";
 import CombinationList, { Combinations } from "../../models/CombinationList";
 
@@ -61,19 +61,20 @@ export function setup(
   status.end = scheduler.combinationsCount;
   status.end = Math.min(end ?? status.end, status.end);
   status.position = Math.min(
-    Math.max(position ?? scheduler.position, status.begin),
+    Math.max(position ?? status.begin, status.begin),
     status.end - 1
   );
   scheduler.position = status.position;
   readValidCombinations();
   searchLoop();
+  debugLog(status);
 }
 
 export function setActive(active: boolean): SearchWorkerStatus {
   status.active = active;
   if (active) {
     searchLoop();
-  }
+  } 
   return status;
 }
 

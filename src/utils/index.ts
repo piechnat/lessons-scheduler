@@ -2,6 +2,9 @@ import { PeriodPlane } from "../models/Period";
 import SDate from "../models/SDate";
 import { SearchWorkerStatus } from "./SearchWorker";
 
+export const DEV_MODE = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+export const debugLog = DEV_MODE ? (...args: any[]) => console.log(...args) : () => {};
+
 export function periodToStr(period: PeriodPlane): string {
   return new SDate(period.begin) + "-" + new SDate(period.begin + period.length).toTime();
 }
@@ -29,4 +32,3 @@ export function debounce<A extends any[]>(fn: (...args: A) => void, timeout = 10
     }, timeout);
   };
 }
-

@@ -51,6 +51,7 @@ const appSlice = createSlice({
       if (removeIndex > -1) {
         state.students.splice(removeIndex, 1);
         state.selectedStudentId = -1;
+        appSlice.caseReducers.searchCommand(state, appSlice.actions.searchCommand("RESET"));
       }
     },
     setStudent: (state, { payload: newStudent }: PayloadAction<StudentPlane>) => {
@@ -67,6 +68,7 @@ const appSlice = createSlice({
       }
       if (success) {
         state.activeScreen = "SCHEDULER";
+        appSlice.caseReducers.searchCommand(state, appSlice.actions.searchCommand("RESET"));
       }
     },
     setProgress: (state, { payload: progress }: PayloadAction<number>) => {

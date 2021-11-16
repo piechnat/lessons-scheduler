@@ -39,37 +39,34 @@ const updateSearchProgress = debounce(async () => {
 
 const searchCommandReducer = (
   state: AppState,
-  { payload: command }: PayloadAction<SearchState | "TOGGLE">
+  { payload: command, type }: PayloadAction<SearchState | "TOGGLE">
 ) => {
   if (command === "TOGGLE") {
     command = state.searchState === "START" ? "STOP" : "START";
   }
   if (command !== state.searchState) {
     switch (command) {
-      case "RESET":
-        state.searchProgress = -1;
-        state.combinations = [];
-        workers.forEach((worker, index) =>
-          worker.setActive(false).then(() => {
-            worker.terminate();
-            delete workers[index];
-          })
-        );
-        break;
       case "START":
         if (state.searchState === "RESET") {
           const scheduler = new Scheduler(state.students);
           const combinationsCount = scheduler.combinationsCount;
           const chunkCount = Math.trunc(combinationsCount / THREAD_COUNT);
           range(THREAD_COUNT).forEach((i) => {
-            workers[i] = new SearchWorker();
+            if (i >= workers.length) {
+              workers[i] = new SearchWorker();
+            }
             const end = i < THREAD_COUNT - 1 ? chunkCount * (i + 1) : combinationsCount;
             workers[i].setup(i, scheduler.toPlain(), false, chunkCount * i, end);
           });
+          state.searchProgress = 0;
         }
         workers.forEach((worker) => worker.setActive(true));
-        state.searchProgress = 0;
         updateSearchProgress();
+        break;
+      case "RESET":
+        state.searchProgress = -1;
+        state.combinations = [];
+        workers.forEach((worker) => worker.setActive(false));
         break;
       case "STOP":
         workers.forEach((worker) => worker.setActive(false));

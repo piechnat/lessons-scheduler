@@ -1,31 +1,71 @@
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../redux";
 import GridList from "../components/GridList";
-import { periodToStr } from "../utils";
-import { showStudentScreen, removeStudent } from "./appSlice";
-import styles from "./styles.module.scss";
-import { useEffect, useState } from "react";
 import DCButton from "../components/DCButton";
-import { confirmDialog } from "../utils/dialogs";
+import ProgressBar from "../components/ProgressBar";
+import { compareByLessonBegin } from "../models/Scheduler";
+import { periodToStr } from "../utils";
+import { selectDialog } from "../utils/dialogs";
+import styles from "./styles.module.scss";
+import {
+  showStudentScreen,
+  removeStudent,
+  searchCommand,
+  setCombinationIndex,
+  setStudentId,
+} from "./appSlice";
 
 function SchedulerScreen() {
   useEffect(() => window.scrollTo(0, 0), []);
   const dispatch = useAppDispatch();
-  const [studentId, setStudentId] = useState(
-    useAppSelector((state) => state.app.selectedStudentId)
-  );
-  const studentList = [...useAppSelector((state) => state.app.students)];
-  studentList.sort((a, b) => a.lesson.begin - b.lesson.begin);
+  const {
+    students: unsortedStudents,
+    selectedStudentId: studentId,
+    combinations,
+    selectdCombinationIndex: combinationIndex,
+    searchState,
+    searchProgress,
+  } = useAppSelector((state) => state.app);
+  const students = [...unsortedStudents].sort(compareByLessonBegin);
+  function handleSelectCombination() {
+    if (combinations.length > 0) {
+      selectDialog(
+        combinations.map((item) => item[0].toString()),
+        combinationIndex
+      ).then((index) => {
+        if (index > -1) {
+          dispatch(setCombinationIndex(index));
+        }
+      });
+    }
+  }
   return (
     <div className={styles.formWrapper}>
       <GridList
         className={styles.gridList}
-        selectedRow={studentList.findIndex((student) => student.id === studentId)}
-        onSelect={(index) => setStudentId(studentList[index]?.id ?? -1)}
-        rows={studentList.map((student) => [student.name, periodToStr(student.lesson)])}
+        rows={students.map((student) => [student.name, periodToStr(student.lesson)])}
+        selectedRow={students.findIndex((student) => student.id === studentId)}
+        onSelect={(index) => dispatch(setStudentId(students[index]?.id ?? -1))}
         listenOutside={true}
       />
+      <ProgressBar progress={searchProgress} working={searchState === "START"} />
+      {combinations.length > 0 && (
+        <div className={styles.flexPanel}>
+          <DCButton onClick={() => dispatch(setCombinationIndex(combinationIndex - 1))}>
+            Poprzedni
+          </DCButton>
+          <DCButton onClick={handleSelectCombination}>
+            Wyniki ({combinationIndex + 1}/{combinations.length})
+          </DCButton>
+          <DCButton onClick={() => dispatch(setCombinationIndex(combinationIndex + 1))}>
+            Następny
+          </DCButton>
+        </div>
+      )}
       <div className={styles.flexPanel}>
-        <DCButton onClick={() => confirmDialog("Test")}>Szukaj</DCButton>
+        <DCButton onClick={() => dispatch(searchCommand("TOGGLE"))}>
+          {searchState === "RESET" ? "Szukaj" : searchState === "START" ? "Zatrzymaj" : "Wznów"}
+        </DCButton>
         <DCButton onClick={() => dispatch(showStudentScreen(studentId))} disabled={studentId < 0}>
           Edytuj
         </DCButton>

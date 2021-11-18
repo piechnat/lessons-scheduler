@@ -1,5 +1,5 @@
 import { ChangeEvent, memo } from "react";
-import SDate from "../utils/SDate";
+import SDate from "../models/SDate";
 import { range } from "../utils";
 
 type TimePickerProps = {

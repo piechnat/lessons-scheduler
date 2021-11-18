@@ -1,0 +1,57 @@
+$wrapperHeight: 1.3rem;
+
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: $wrapperHeight 0;
+  }
+}
+
+.wrapper {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.664);
+  background-color: rgba(255, 255, 255, 0.726);
+  height: $wrapperHeight;
+  margin-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.5s;
+  &.hidden {
+    height: 0;
+    border: none;
+  }
+  .indicator {
+    background-color: rgba(87, 87, 212, 0.5);
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+  }
+  .indicator.striped {
+    background-image: linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: $wrapperHeight $wrapperHeight;
+    animation: progress-bar-stripes 1s linear infinite;
+    transition: width 1s;
+  }
+  .caption {
+    position: relative;
+    z-index: 1;
+    color: rgba(0, 0, 0, 0.664);
+    font-size: 1rem;
+    font-weight: bold;
+  }
+}
+

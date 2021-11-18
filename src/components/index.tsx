@@ -1,5 +1,5 @@
 import { range } from "../utils";
-import SDate from "../utils/SDate";
+import SDate from "../models/SDate";
 
 export const DayNameOptions = () => (
   <>
